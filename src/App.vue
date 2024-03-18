@@ -1,11 +1,10 @@
 <script setup>
 import { useI18n } from "vue-i18n";
-import { useStore } from "./store/index.js";
-const { t, locale } = useI18n();
-// const { locale, setLanguage } = useStore();
-function setLanguage(val) {
-  console.log(val);
-  locale.value = val;
+import HelloWorld from "./components/HelloWorld.vue";
+const { locale } = useI18n();
+function refresh(value) {
+  locale.value = value;
+  console.log(value);
 }
 </script>
 
@@ -15,7 +14,7 @@ function setLanguage(val) {
     placeholder="Select"
     @change="
       (val) => {
-        setLanguage(val);
+        refresh(val);
       }
     "
     style="width: 240px"
@@ -23,7 +22,8 @@ function setLanguage(val) {
     <el-option label="中文" value="zh" />
     <el-option label="English" value="en" />
   </el-select>
-  {{ t("message.hello") }}
+  <!--  {{ t("message.hello") }}-->
+  <HelloWorld msg="你好"></HelloWorld>
 </template>
 
 <style scoped></style>
