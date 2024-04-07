@@ -54,7 +54,10 @@ export default defineConfig(({ command }) => {
       name: "i18n",
       value: "/src/i18n/index.js",
     },
+    sourceMap: true, // 生成映射文件
+    transform: {
 
+    }
   };
   if (command === "serve") {
     i18nAutoConf.mode = command;
@@ -62,6 +65,8 @@ export default defineConfig(({ command }) => {
     i18nAutoConf.mode = command;
     i18nAutoConf.translate = {
       on: true,
+      secretId: "AKIDgFwacZMwOccTBwmS7phWUK0c4Reknlw7", // 请输入你的腾讯翻译api的用户secretId
+      secretKey: "S0XvNlAXsBc9Ow7ZAkuDZIMVvPE0xv1k", // 请输
     };
   }
   plugins.push(i18nAuto(i18nAutoConf));
