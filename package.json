@@ -22,8 +22,16 @@
     "eslint-plugin-vue": "^9.22.0",
     "prettier": "^3.2.5",
     "typescript": "^4.6.4",
+    "@babel/generator": "^7.22.9",
+    "@babel/parser": "^7.22.7",
+    "@babel/traverse": "^7.22.8",
+    "@babel/types": "^7.22.5",
+    "@rollup/pluginutils": "^5.0.2",
+    "tencentcloud-sdk-nodejs-tmt": "^4.0.643",
+    "unplugin-auto-import": "^0.17.6",
     "unplugin-vue-components": "^0.26.0",
     "vite": "^3.0.7",
+    "vitest": "^1.4.0",
     "vue-tsc": "^0.39.5"
   }
 }
