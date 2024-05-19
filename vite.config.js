@@ -21,27 +21,27 @@ export default defineConfig(({ command }) => {
   ];
   const i18nAutoConf = {
     output: {
+      generate: true,
       path: path.resolve("src/assets"),
     },
     include: ["**.js", "**.vue"], // 针对什么文件进行国际化词条
-    exclude: ["src/i18n/index.js"],
+    exclude: ["src/i18n/index.js", "**/node_modules/**"],
     i18nCallee: "i18n.global.t", // 例子
     dependency: {
       // 例子
       name: "i18n",
       value: "/src/i18n/index.js",
     },
-    sourceMap: true, // 生成映射文件
-    transform: {},
+    transform: true, // 转译源码
+    sourceMap: false, // 生成映射文件
   };
   if (command === "serve") {
     i18nAutoConf.mode = command;
   } else if (command === "build") {
     i18nAutoConf.mode = command;
     i18nAutoConf.translate = {
-      on: true,
-      secretId: "AKIDgFwacZMwOccTBwmS7phWUK0c4Reknlw7", // 请输入你的腾讯翻译api的用户secretId
-      secretKey: "S0XvNlAXsBc9Ow7ZAkuDZIMVvPE0xv1k", // 请输
+      on: true, // 开启自动翻译
+
     };
   }
   plugins.push(i18nAuto(i18nAutoConf));
