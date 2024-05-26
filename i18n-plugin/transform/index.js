@@ -118,6 +118,7 @@ export default function i18nTransform({ id, code }, options) {
   const visitor = {
     // Finds if the user's dependency is in the import declaration
     ImportDeclaration(path) {
+      console.log("importDeclaration", path.node.source.value);
       if (!transform || !dependency || loadedDependency) {
         return;
       }
@@ -134,6 +135,7 @@ export default function i18nTransform({ id, code }, options) {
       matched && (loadedDependency = true);
     },
     VariableDeclarator(path) {
+
       if (!transform || !dependency || loadedDependency) {
         return;
       }
@@ -175,6 +177,8 @@ export default function i18nTransform({ id, code }, options) {
       valueMatched && nameMatched && (loadedDependency = true);
     },
     CallExpression(path) {
+      console.log("CallExpression");
+
       let wholeCallName = "";
       const recurName = (node) => {
         if (node.type === "MemberExpression") {
@@ -208,6 +212,7 @@ export default function i18nTransform({ id, code }, options) {
       });
     },
     StringLiteral(path) {
+      console.log("StringLiteral");
       if (path.parent.type === "ImportDeclaration") {
         return;
       }
@@ -246,6 +251,7 @@ export default function i18nTransform({ id, code }, options) {
       }
     },
     TemplateLiteral(path) {
+      console.log("TemplateLiteral");
       if (findCommentExclude(path)) {
         return;
       }
