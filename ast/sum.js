@@ -3,4 +3,4 @@ function sum(a, b) {
 }
 //
 // module.exports = sum;
-const number = 10;
+// const number = 10;
