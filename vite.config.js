@@ -41,7 +41,7 @@ export default defineConfig(({ command }) => {
     i18nAutoConf.mode = command;
     i18nAutoConf.translate = {
       on: true, // 开启自动翻译
-
+      lang: ['en', 'zh-TW'],
     };
   }
   plugins.push(i18nAuto(i18nAutoConf));
