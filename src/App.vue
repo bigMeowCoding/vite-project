@@ -20,10 +20,11 @@ function refresh (value) {
     <a href="https://vuejs.org/" target="_blank">
         <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
+    <div>我爱你</div>
     {{test}}
     <!-- 注释 -->
     <!-- {{$t('0')}} -->
-    我来了
+    我走了
   </div>
   <HelloWorld msg="Vite + Vue" />
 </template>

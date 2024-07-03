@@ -42,10 +42,16 @@ export default defineConfig(({ command }) => {
     i18nAutoConf.translate = {
       on: true, // 开启自动翻译
       lang: ['en', 'zh-TW'],
+
     };
   }
-  plugins.push(i18nAuto(i18nAutoConf));
+  plugins.unshift(i18nAuto(i18nAutoConf));
   return {
     plugins,
+    build:{
+      minify:false,
+      target: 'es2015', // 设置构建目标为 ES6
+
+    }
   };
 });
