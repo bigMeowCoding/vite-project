@@ -172,7 +172,7 @@ const createTranslate = (target, source, needFile = true) => {
                             textConfig: translateWordConfig
                         })
                         Object.assign(langConfig, translateRes)
-                        
+
                         translationFileParam.content = JSON.stringify(langConfig)
                         needFile && createFileWidthPath(translationFileParam)
                         result[item] = langConfig

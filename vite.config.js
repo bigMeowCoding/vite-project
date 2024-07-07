@@ -40,18 +40,16 @@ export default defineConfig(({ command }) => {
   } else if (command === "build") {
     i18nAutoConf.mode = command;
     i18nAutoConf.translate = {
-      on: true, // 开启自动翻译
-      lang: ['en', 'zh-TW'],
-
+      on: false, // 开启自动翻译
+      lang: ["en", "zh-TW"],
     };
   }
-  plugins.unshift(i18nAuto(i18nAutoConf));
+  plugins.push(i18nAuto(i18nAutoConf));
   return {
     plugins,
-    build:{
-      minify:false,
-      target: 'es2015', // 设置构建目标为 ES6
-
-    }
+    build: {
+      minify: false, // 禁用代码压缩
+      target: "esnext", // 保持 ES6 语法
+    },
   };
 });
