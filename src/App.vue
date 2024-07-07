@@ -1,95 +1,61 @@
-<script setup lang="ts">
-import { useI18n } from "vue-i18n";
-const { t, locale } = useI18n();
-// const { locale, setLanguage } = useStore();
-function setLanguage(val) {
-  console.log(val);
-  locale.value = val;
-}
-const tableData = [
+<template>
+  <avue-form :option="option" v-model="formValue"></avue-form>
+</template>
+<script setup>
+import { ref } from "vue";
+import { watch } from "vue";
+const dicData = [
   {
-    id: "12987122",
-    name: "Tom",
-    amount1: "234",
-    amount2: "3.2",
-    amount3: 10,
-  },
-  {
-    id: "12987123",
-    name: "Tom",
-    amount1: "165",
-    amount2: "4.43",
-    amount3: 12,
-  },
-  {
-    id: "12987124",
-    name: "Tom",
-    amount1: "324",
-    amount2: "1.9",
-    amount3: 9,
-  },
-  {
-    id: "12987125",
-    name: "TomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTom",
-    amount1: "621",
-    amount2: "2.2",
-    width: 100,
-    amount3: 17,
-  },
-  {
-    id: "12987126",
-    name: "Tom",
-    amount1: "539",
-    amount2: "4.1",
-    amount3: 15,
+    value: "zhinan",
+    label: "指南",
+    children: [
+      {
+        value: "shejiyuanze",
+        label: "设计原则",
+        children: [
+          {
+            value: "yizhi",
+            label: "一致",
+          },
+          {
+            value: "fankui",
+            label: "反馈",
+          },
+        ],
+      },
+    ],
   },
 ];
-
-const arraySpanMethod = ({ row, column, rowIndex, columnIndex }) => {
-  if (rowIndex % 2 === 0) {
-    if (columnIndex === 0) {
-      return [1, 2];
-    } else if (columnIndex === 1) {
-      return [0, 0];
-    }
-  }
-};
+const formValue = ref({});
+watch(
+  formValue,
+  (val) => {
+    console.log(val, "formValue");
+  },
+  { deep: true },
+);
+const option = ref({
+  column: [
+    {
+      label: "级联",
+      prop: "cascader",
+      type: "cascader",
+      dicData: dicData,
+      rules: [{ required: true, message: "请选择级联", trigger: "change" }],
+      change: (val) => {
+        console.log(val, "cascader1");
+      },
+    },
+    {
+      label: "级联",
+      prop: "cascader1",
+      type: "cascader",
+      expandTrigger: "click",
+      dicData: dicData,
+      change: (val) => {
+        console.log(val, "cascader2");
+      },
+    },
+  ],
+});
 </script>
-
-<template>
-  <!--  <el-table-->
-  <!--    :data="tableData"-->
-  <!--    :span-method="arraySpanMethod"-->
-  <!--    border-->
-  <!--    :tooltip-options="{ effect: 'light', trigger: 'click', enterable: true }"-->
-  <!--    style="width: 100%"-->
-  <!--  >-->
-  <!--    <el-table-column prop="id" label="ID" width="180" />-->
-
-  <!--    <el-table-column-->
-  <!--      prop="name"-->
-  <!--      label="Name"-->
-  <!--      :show-overflow-tooltip="true"-->
-  <!--      width="100"-->
-  <!--    />-->
-  <!--    <el-table-column prop="amount1" sortable label="Amount 1" />-->
-  <!--    <el-table-column prop="amount2" sortable label="Amount 2" />-->
-  <!--    <el-table-column prop="amount3" sortable label="Amount 3" />-->
-  <!--  </el-table>-->
-  <el-select
-    v-model="locale"
-    placeholder="Select"
-    @change="
-      (val) => {
-        setLanguage(val);
-      }
-    "
-    style="width: 240px"
-  >
-    <el-option label="中文" value="zh" />
-    <el-option label="English" value="en" />
-  </el-select>
-  <HelloWorld msg="你好"></HelloWorld>
-</template>
-
-<style scoped></style>
