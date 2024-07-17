@@ -10,21 +10,23 @@
     "translate": "node ./translate.js"
   },
   "dependencies": {
+    "@vue/compiler-sfc": "^3.4.32",
     "element-plus": "^2.6.0",
     "pinia": "2.0.14",
     "rollup-plugin-i18n-auto": "^0.1.2",
     "umi-request": "^1.4.0",
     "vue": "^3.2.37",
-    "vue-i18n": "^9.10.1"
+    "vue-i18n": "^9.10.1",
+    "vue-template-compiler": "^2.7.16"
   },
   "devDependencies": {
     "@babel/core": "^7.24.6",
     "@babel/generator": "^7.22.9",
     "@babel/parser": "^7.22.7",
     "@babel/traverse": "^7.22.8",
-    "@smallwei/avue": "~3.2.23",
     "@babel/types": "^7.22.5",
     "@rollup/pluginutils": "^5.0.2",
+    "@smallwei/avue": "~3.2.23",
     "@vitejs/plugin-vue": "^3.0.3",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.22.0",

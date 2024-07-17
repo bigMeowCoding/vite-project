@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { findTextInJs } = require("./findTextInJs");
+const { findTextInVue } = require("./findTextInVue");
 /**
  * 判断是文件夹
  * @param path
@@ -35,7 +36,7 @@ function findChineseText(code, fileName) {
   if (fileName.endsWith(".html")) {
     // return findTextInHtml(code);
   } else if (fileName.endsWith(".vue")) {
-    // return findTextInVue(code);
+    return findTextInVue(code);
   } else if (fileName.endsWith(".js") || fileName.endsWith(".jsx")) {
     return findTextInJs(code);
   } else {
@@ -48,7 +49,7 @@ function findAllChineseText(dir) {
   const allTexts = files.reduce((pre, file) => {
     const code = readFile(file);
     const texts = findChineseText(code, file);
-    console.log(texts);
+    console.log(file, texts);
     // 调整文案顺序，保证从后面的文案往前替换，避免位置更新导致替换出错
     // const sortTexts = _.sortBy(texts, (obj) => -obj.range.start);
     // if (texts.length > 0) {
