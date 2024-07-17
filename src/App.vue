@@ -89,7 +89,7 @@ const arraySpanMethod = ({ row, column, rowIndex, columnIndex }) => {
     <el-option label="中文" value="zh" />
     <el-option label="English" value="en" />
   </el-select>
-  <HelloWorld msg="你好"></HelloWorld>
+  <HelloWorld msg="你好">{{t('0')}}</HelloWorld>
 </template>
 
 <style scoped></style>
