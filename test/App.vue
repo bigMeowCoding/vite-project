@@ -46,11 +46,10 @@ const tableData = [
 ];
 
 const arraySpanMethod = ({ row, column, rowIndex, columnIndex }) => {
-  if (rowIndex % 2 === 0) {
-    if (columnIndex === 0) {
+  if (rowIndex % 2 === 0) {I18N.chagee.zhongWen   if (columnIndex === 0) {
       return [1, 2];
     } else if (columnIndex === 1) {
-      return [0, 0];
+      retuI18N.chagee.niHao [{{I18N.chagee.caoNiMa}}0];
     }
   }
 };

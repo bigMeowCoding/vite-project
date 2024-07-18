@@ -1,5 +1,6 @@
+import I18N from 'src/utils/I18N';
 function sum(a, b) {
-  console.log("中国");
+  console.log(I18N.chagee.zhongGuo);
   return a + b;
 }
 //
