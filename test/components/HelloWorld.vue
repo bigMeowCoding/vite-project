@@ -1,17 +1,19 @@
 <script setup>
 import { ref } from "vue";
 import request from "umi-request";
-import { name, work } from "./test.js";
+import { name, work } from "../../oldSrc/components/test.js";
 defineProps({
   msg: String,
 });
 
-const {{I18N.chagee.bianJi}}unt = ref(0);{{I18N.chagee.zuJianHEL}}'/api/ge{{I18N.chagee.ceShiReGengXin}}',{data:{a:1}}).then((res) => {{I18N.chagee.haHa}}//   console.log(res);
+const count = ref(0);
+// request.post('/api/getUser',{data:{a:1}}).then((res) => {
+//   console.log(res);
 // });
 // request.post('/api/mock/test',{data:{a:1}}).then((res) => {
-//   consol{{I18N.chagee.guanFangWenDang}}g(res);
+//   console.log(res);
 // });
-</s{{I18N.chagee.anZhuang}}ipt>
+</script>
 
 <template>
   {{ name }}
@@ -19,7 +21,7 @@ const {{I18N.chagee.bianJi}}unt = ref(0);{{I18N.chagee.zuJianHEL}}'/api/ge{{I18N
   <h1>{{ msg }}</h1>
 
   <div class="card">
-    <button type{{I18N.chagee.zuiHaoDeID}}n" @click="count++">count is {{ cou{{I18N.chagee.dianJi}} }}</button>
+    <button type="button" @click="count++">count is {{ count }}</button>
     <p>
       编辑
       <code>组件 HelloWorld.vue</code> 测试热更新
