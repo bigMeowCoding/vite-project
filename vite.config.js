@@ -10,16 +10,9 @@ import path from "node:path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-  const plugins = [
-    vue(),
-    AutoImport({
-      resolvers: [ElementPlusResolver()],
-    }),
-    Components({
-      resolvers: [ElementPlusResolver()],
-    }),
-  ];
+  const plugins = [vue(), AutoImport({}), Components({})];
   const i18nAutoConf = {
+    server: { hmr: true },
     output: {
       generate: true,
       path: path.resolve("src/assets"),

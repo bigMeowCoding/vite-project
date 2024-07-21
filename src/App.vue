@@ -1,9 +1,17 @@
 <template>
-  <avue-form :option="option" v-model="formValue"></avue-form>
+  <!--  <el-form-demo></el-form-demo>-->
+  <input @change="change" @input="input" />
 </template>
 <script setup>
 import { ref } from "vue";
 import { watch } from "vue";
+import ElFormDemo from "./components/form-exercise.vue";
+function change() {
+  console.log("change");
+}
+function input() {
+  console.log("input");
+}
 const dicData = [
   {
     value: "zhinan",
