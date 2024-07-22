@@ -55,7 +55,7 @@ function initProject(existDir?: string, type?: string) {
   /** 初始化配置文件夹 */
   if (existDir) {
     if (!fs.existsSync(existDir)) {
-      console.log('输入的目录不存在，已为你生成默认文件夹');
+      console.log('输入的目录不存在，已为你生成默认文件夹.');
       fs.mkdirSync(PROJECT_CONFIG.dir);
     }
   } else if (!fs.existsSync(PROJECT_CONFIG.dir)) {
