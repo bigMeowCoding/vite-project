@@ -2,15 +2,16 @@
   "name": "vite-project",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
 
   "scripts": {
+    "start": "it -c i18n.config.js",
     "dev": "vite",
     "build": " vite build",
     "bale": "node ./ast/demo1.js",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ifreeovo/i18n-extract-cli": "^3.5.1",
     "element-plus": "^2.6.0",
     "pinia": "2.0.14",
     "rollup-plugin-i18n-auto": "^0.1.2",
