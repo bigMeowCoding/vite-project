@@ -1,51 +1,41 @@
 <script setup>
-import { ref } from "vue";
-import request from "umi-request";
-import { name, work } from "./test.js";
-defineProps({
-  msg: String,
-});
+import * as echarts from 'echarts';
+import { onMounted } from 'vue';
 
-const count = ref(0);
-// request.post('/api/getUser',{data:{a:1}}).then((res) => {
-//   console.log(res);
-// });
-// request.post('/api/mock/test',{data:{a:1}}).then((res) => {
-//   console.log(res);
-// });
+onMounted(() => {
+// 基于准备好的dom，初始化echarts实例
+  var myChart = echarts.init(document.getElementById('main'));
+// 绘制图表
+  myChart.setOption({
+    title: {
+      text: 'ECharts 入门示例'
+    },
+    tooltip: {},
+    xAxis: {
+      data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+    },
+    yAxis: {},
+    series: [
+      {
+        name: '销量',
+        type: 'bar',
+        data: [5, 20, 36, 10, 10, 20]
+      }
+    ]
+  });});
+
 </script>
 
 <template>
-  {{ name }}
-  {{ work }}
-  <h1>{{ msg }}</h1>
-
-  <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <p>
-      编辑
-      <code>组件 HelloWorld.vue</code> 测试热更新
-    </p>
-  </div>
-
-  <p>
-    哈哈
-    <a href="https://vuejs.org/guide/quick-start.html#local" target="_blank"
-      >create-vue</a
-    >官方文档
-  </p>
-  <p>
-    安装
-    <a href="https://github.com/johnsoncodehk/volar" target="_blank" class
-      >Volar</a
-    >
-    最好的idea
-  </p>
-  <p class="read-the-docs">点击</p>
+<div id="main" :style="{width:200,height:200}"></div>
 </template>
 
 <style scoped>
 .read-the-docs {
   color: #888;
+}
+#main{
+  width:100vw;
+  height:100vh;
 }
 </style>
