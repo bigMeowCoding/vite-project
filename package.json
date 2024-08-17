@@ -8,6 +8,7 @@
     "bale": "node ./ast/demo1.js",
     "preview": "vite preview",
     "test": "node ./dist/index.js",
+    "compile": "node ./extract.js",
     "translate": "node ./translate.js"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "inquirer": "^10.0.3",
     "lodash": "^4.17.21",
     "pinia": "2.0.14",
+    "pinyin": "4.0.0-alpha.2",
     "pinyin-pro": "^3.23.1",
     "rollup-plugin-i18n-auto": "^0.1.2",
     "slash2": "^2.0.0",
