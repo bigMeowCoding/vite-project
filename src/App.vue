@@ -1,11 +1,9 @@
 <script setup lang="ts">
-
-import Bar from "./components/Bar.vue";
+import BarDemo2 from "./components/BarDemo2.vue";
 </script>
 
 <template>
-<Bar></Bar>
-
+  <BarDemo2></BarDemo2>
 </template>
 
 <style scoped></style>
