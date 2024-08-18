@@ -7,8 +7,16 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    BasicDateTable: typeof import('./src/components/date-picker/src/date-picker-com/basic-date-table.vue')['default']
+    BasicMonthTable: typeof import('./src/components/date-picker/src/date-picker-com/basic-month-table.vue')['default']
+    BasicYearTable: typeof import('./src/components/date-picker/src/date-picker-com/basic-year-table.vue')['default']
+    ElButton: typeof import('element-plus/es')['ElButton']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    PanelDatePick: typeof import('./src/components/date-picker/src/date-picker-com/panel-date-pick.vue')['default']
+    PanelDateRange: typeof import('./src/components/date-picker/src/date-picker-com/panel-date-range.vue')['default']
+    PanelMonthRange: typeof import('./src/components/date-picker/src/date-picker-com/panel-month-range.vue')['default']
+    PanelYearRange: typeof import('./src/components/date-picker/src/date-picker-com/panel-year-range.vue')['default']
   }
 }

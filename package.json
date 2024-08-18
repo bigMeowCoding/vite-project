@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-
   "scripts": {
     "dev": "vite",
     "build": " vite build",
@@ -11,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "element-plus": "^2.6.0",
+    "dayjs": "^1.11.12",
+    "lodash-unified": "^1.0.3",
     "pinia": "2.0.14",
+    "element-plus": "^2.5.0",
     "rollup-plugin-i18n-auto": "^0.1.2",
     "umi-request": "^1.4.0",
     "vue": "^3.2.37",
@@ -23,9 +24,9 @@
     "@babel/generator": "^7.22.9",
     "@babel/parser": "^7.22.7",
     "@babel/traverse": "^7.22.8",
-    "@smallwei/avue": "~3.2.23",
     "@babel/types": "^7.22.5",
     "@rollup/pluginutils": "^5.0.2",
+    "@smallwei/avue": "~3.2.23",
     "@vitejs/plugin-vue": "^3.0.3",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.22.0",
