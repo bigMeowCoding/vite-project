@@ -1,95 +1,46 @@
-<script setup lang="ts">
-import { useI18n } from "vue-i18n";
-const { t, locale } = useI18n();
-// const { locale, setLanguage } = useStore();
-function setLanguage(val) {
-  console.log(val);
-  locale.value = val;
-}
-const tableData = [
-  {
-    id: "12987122",
-    name: "Tom",
-    amount1: "234",
-    amount2: "3.2",
-    amount3: 10,
-  },
-  {
-    id: "12987123",
-    name: "Tom",
-    amount1: "165",
-    amount2: "4.43",
-    amount3: 12,
-  },
-  {
-    id: "12987124",
-    name: "Tom",
-    amount1: "324",
-    amount2: "1.9",
-    amount3: 9,
-  },
-  {
-    id: "12987125",
-    name: "TomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTom",
-    amount1: "621",
-    amount2: "2.2",
-    width: 100,
-    amount3: 17,
-  },
-  {
-    id: "12987126",
-    name: "Tom",
-    amount1: "539",
-    amount2: "4.1",
-    amount3: 15,
-  },
-];
+<template>
+  <div class="upload-container">
+    <h2>上传你的图标</h2>
+    <input type="file" @change="handleFileUpload" />
+  </div>
+</template>
 
-const arraySpanMethod = ({ row, column, rowIndex, columnIndex }) => {
-  if (rowIndex % 2 === 0) {
-    if (columnIndex === 0) {
-      return [1, 2];
-    } else if (columnIndex === 1) {
-      return [0, 0];
-    }
-  }
+<script>
+export default {
+  methods: {
+    async handleFileUpload(event) {
+      const file = event.target.files[0];
+      const formData = new FormData();
+      formData.append("icon", file);
+
+      try {
+        const response = await fetch("http://localhost:3000/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "iconfont.ttf"; // 下载字体文件
+          a.click();
+        } else {
+          console.error("上传失败");
+        }
+      } catch (error) {
+        console.error("上传过程中发生错误:", error);
+      }
+    },
+  },
 };
 </script>
 
-<template>
-  <!--  <el-table-->
-  <!--    :data="tableData"-->
-  <!--    :span-method="arraySpanMethod"-->
-  <!--    border-->
-  <!--    :tooltip-options="{ effect: 'light', trigger: 'click', enterable: true }"-->
-  <!--    style="width: 100%"-->
-  <!--  >-->
-  <!--    <el-table-column prop="id" label="ID" width="180" />-->
-
-  <!--    <el-table-column-->
-  <!--      prop="name"-->
-  <!--      label="Name"-->
-  <!--      :show-overflow-tooltip="true"-->
-  <!--      width="100"-->
-  <!--    />-->
-  <!--    <el-table-column prop="amount1" sortable label="Amount 1" />-->
-  <!--    <el-table-column prop="amount2" sortable label="Amount 2" />-->
-  <!--    <el-table-column prop="amount3" sortable label="Amount 3" />-->
-  <!--  </el-table>-->
-  <el-select
-    v-model="locale"
-    placeholder="Select"
-    @change="
-      (val) => {
-        setLanguage(val);
-      }
-    "
-    style="width: 240px"
-  >
-    <el-option label="中文" value="zh" />
-    <el-option label="English" value="en" />
-  </el-select>
-  <HelloWorld msg="你好"></HelloWorld>
-</template>
-
-<style scoped></style>
+<style scoped>
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+</style>
