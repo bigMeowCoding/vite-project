@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from "vue";
-import request from "umi-request";
 import { name, work } from "./test.js";
 defineProps({
   msg: String,
