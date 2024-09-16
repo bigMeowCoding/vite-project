@@ -1,22 +1,13 @@
 <script setup>
 import { ref } from "vue";
-import { name, work } from "./test.js";
 defineProps({
   msg: String,
 });
 
 const count = ref(0);
-// request.post('/api/getUser',{data:{a:1}}).then((res) => {
-//   console.log(res);
-// });
-// request.post('/api/mock/test',{data:{a:1}}).then((res) => {
-//   console.log(res);
-// });
 </script>
 
 <template>
-  {{ name }}
-  {{ work }}
   <h1>{{ msg }}</h1>
 
   <div class="card">

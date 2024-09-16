@@ -2,15 +2,15 @@
   "name": "vite-project",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
-
   "scripts": {
     "dev": "vite",
     "build": " vite build",
     "bale": "node ./ast/demo1.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest --config  ./vitest.config.js"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "element-plus": "^2.6.0",
     "pinia": "2.0.14",
     "rollup-plugin-i18n-auto": "^0.1.2",
@@ -23,13 +23,15 @@
     "@babel/generator": "^7.22.9",
     "@babel/parser": "^7.22.7",
     "@babel/traverse": "^7.22.8",
-    "@smallwei/avue": "~3.2.23",
     "@babel/types": "^7.22.5",
     "@rollup/pluginutils": "^5.0.2",
-    "@vitejs/plugin-vue": "^3.0.3",
+    "@smallwei/avue": "~3.2.23",
+    "@vitejs/plugin-vue": "^3.2.0",
+    "@vue/test-utils": "^2.4.6",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.22.0",
     "esprima": "^4.0.1",
+    "jsdom": "^25.0.0",
     "prettier": "^3.2.5",
     "tencentcloud-sdk-nodejs-tmt": "4.0.643",
     "typescript": "^4.6.4",

@@ -21,7 +21,8 @@
   <!--    <el-table-column prop="amount3" sortable label="Amount 3" />-->
   <!--  </el-table>-->
 
-  <HelloWorld msg="你好"></HelloWorld>
+  <!--  <HelloWorld msg="你好"></HelloWorld>-->
+  <StudentLIst></StudentLIst>
 </template>
 
 <style scoped></style>
