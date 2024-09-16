@@ -8,7 +8,9 @@
 
     <!-- 分页 -->
     <el-pagination
-      layout="prev, pager, next"
+        ref="pagination"
+
+        layout="prev, pager, next"
       :total="total"
       :page-size="pageSize"
       v-model:current-page="currentPage"
@@ -20,6 +22,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
+import { ElTable, ElTableColumn, ElPagination } from "element-plus";
 import axios from "axios"; // 需要安装 axios 进行 HTTP 请求
 
 export default {
