@@ -2,7 +2,9 @@
 import { ref } from "vue";
 import request from "umi-request";
 import { name, work } from "./test.js";
-defineProps({
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+const props = defineProps({
   msg: String,
 });
 
@@ -18,7 +20,7 @@ const count = ref(0);
 <template>
   {{ name }}
   {{ work }}
-  <h1>{{ msg }}</h1>
+  <h1>{{ props.msg }}</h1>
 
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>
@@ -35,10 +37,9 @@ const count = ref(0);
     >官方文档
   </p>
   <p>
-    安装
-    <a href="https://github.com/johnsoncodehk/volar" target="_blank" class
-      >Volar</a
-    >
+    {{ t("5") }}
+
+    <a href="https://github.com/johnsoncodehk/volar" target="_blank">Volar</a>
     最好的idea
   </p>
   <p class="read-the-docs">点击</p>
