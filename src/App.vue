@@ -20,10 +20,10 @@ function setLanguage(val) {
     "
     style="width: 240px"
   >
-    <el-option label="{{ $t('key_0') }}" value="zh" />
+    <el-option label="中文" value="zh" />
     <el-option label="English" value="en" />
   </el-select>
-  <HelloWorld msg="{{ t('key_2') }}"></HelloWorld>
+  <HelloWorld msg="你好"></HelloWorld>
 </template>
 
 <style scoped></style>
