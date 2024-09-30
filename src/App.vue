@@ -26,4 +26,8 @@ function setLanguage(val) {
   </el-select>
 </template>
 
-<style scoped></style>
+<style scoped>
+.a {
+  color: red;
+}
+</style>
