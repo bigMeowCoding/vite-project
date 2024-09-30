@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n();
-import HelloWorld from "./components/HelloWorld.vue";
 // const { locale, setLanguage } = useStore();
 function setLanguage(val) {
   console.log(val);
@@ -23,7 +22,6 @@ function setLanguage(val) {
     <el-option label="中文" value="zh" />
     <el-option label="English" value="en" />
   </el-select>
-  <HelloWorld msg="你好"></HelloWorld>
 </template>
 
 <style scoped></style>
