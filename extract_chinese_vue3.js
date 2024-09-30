@@ -1,174 +1,211 @@
 const fs = require("fs");
 const path = require("path");
 const { parse, compileTemplate } = require("@vue/compiler-sfc");
+const { NodeTypes } = require("@vue/compiler-core");
 
-function extractChineseFromVue(filePath) {
-  console.log(`正在处理文件: ${filePath}`);
-  const source = fs.readFileSync(filePath, "utf-8");
+function extractAndReplaceChineseInVue(filePath) {
+  try {
+    const source = fs.readFileSync(filePath, "utf-8");
+    const { descriptor } = parse(source);
+    const textToKeyMap = new Map();
 
-  const { descriptor } = parse(source);
-
-  let chineseTexts = [];
-
-  // 提取模板中的中文
-  if (descriptor.template) {
-    console.log("模板内容:", descriptor.template.content);
-    try {
+    if (descriptor.template) {
       const { ast } = compileTemplate({
         source: descriptor.template.content,
         filename: filePath,
-        id: path.basename(filePath),
+        id: "template",
       });
-      traverseAst(ast, chineseTexts);
-    } catch (error) {
-      console.error("编译模板时出错:", error);
-    }
-  }
 
-  // 直接从模板内容中提取中文
-  const templateChineseRegex = /[\u4e00-\u9fff]+/g;
-  const templateMatches = descriptor.template.content.match(templateChineseRegex);
-  if (templateMatches) {
-    chineseTexts = chineseTexts.concat(templateMatches);
-  }
+      traverseAst(ast, (node) => {
+        if (node.type === NodeTypes.ELEMENT) {
+          if (Array.isArray(node.props)) {
+            node.props.forEach((prop) => {
+              if (prop.type === NodeTypes.ATTRIBUTE && prop.value) {
+                const value = prop.value.content;
+                if (
+                  typeof value === "string" &&
+                  /[\u4e00-\u9fff]/.test(value)
+                ) {
+                  prop.value.content = replaceChineseInText(
+                    value,
+                    textToKeyMap
+                  );
 
-  // 提取脚本中的中文
-  if (descriptor.script || descriptor.scriptSetup) {
-    const scriptContent = (descriptor.script || descriptor.scriptSetup).content;
-    console.log("脚本内容:", scriptContent);
-    const chineseRegex = /[\u4e00-\u9fff]+/g;
-    const matches = scriptContent.match(chineseRegex);
-    if (matches) {
-      chineseTexts = chineseTexts.concat(matches);
-    }
-  }
-
-  console.log(`从 ${filePath} 提取的中文文本:`, chineseTexts);
-  return chineseTexts;
-}
-
-function traverseAst(node, results) {
-  if (!node) return;
-  
-  console.log("正在遍历节点:", node.type);
-  
-  if (node.type === 1) { // 元素节点
-    if (node.props) {
-      node.props.forEach((prop) => {
-        if (prop.type === 6 && prop.value && prop.value.content) {
-          console.log("属性内容:", prop.value.content);
-          const chineseRegex = /[\u4e00-\u9fff]+/g;
-          const matches = prop.value.content.match(chineseRegex);
-          if (matches) {
-            results.push(...matches);
+                  // 如果属性不是 v-bind 或以 : 开头，添加绑定
+                  if (prop.name !== "v-bind" && prop.name[0] !== ":") {
+                    prop.name = ":" + prop.name;
+                  }
+                }
+              }
+            });
+          }
+        } else if (node.type === NodeTypes.TEXT) {
+          const text = node.content;
+          if (typeof text === "string" && /[\u4e00-\u9fff]/.test(text)) {
+            node.content = `{{ ${replaceChineseInText(text, textToKeyMap)} }}`;
           }
         }
       });
+
+      // 使用修改后的 AST 重新生成模板内容
+      descriptor.template.content = generateTemplateFromAst(ast);
     }
-    if (node.children) {
-      node.children.forEach((child) => traverseAst(child, results));
+
+    if (descriptor.script) {
+      let scriptContent = descriptor.script.content;
+      const scriptChineseRegex = /(['"`])([^'"`]*[\u4e00-\u9fff][^'"`]*)['"`]/g;
+      scriptContent = scriptContent.replace(
+        scriptChineseRegex,
+        (match, quote, text) => {
+          const key = getOrCreateKey(text.trim(), textToKeyMap);
+          return `t(${quote}${key}${quote})`;
+        }
+      );
+      descriptor.script.content = scriptContent;
     }
-  } else if (node.type === 2) { // 文本节点
-    console.log("文本内容:", node.content);
-    const chineseRegex = /[\u4e00-\u9fff]+/g;
-    const matches = node.content.match(chineseRegex);
-    if (matches) {
-      results.push(...matches);
-    }
+
+    // 重新生成 Vue 文件内容
+    const generated = generateVueFile(descriptor);
+    fs.writeFileSync(filePath, generated, "utf-8");
+    console.log(`文件 ${filePath} 已更新`);
+
+    return textToKeyMap;
+  } catch (error) {
+    console.error(`处理文件 ${filePath} 时出错:`, error);
+    throw error;
   }
-  
-  // 遍历其他可能的子节点
-  if (node.ifConditions) {
-    node.ifConditions.forEach(condition => {
-      if (condition.block) {
-        traverseAst(condition.block, results);
-      }
+}
+
+function replaceChineseInText(text, textToKeyMap) {
+  const regex = /([\u4e00-\u9fff]+|[a-zA-Z0-9]+\s+is|[a-zA-Z0-9.]+)/g;
+  return text.replace(regex, (match) => {
+    if (/[\u4e00-\u9fff]/.test(match) || match.endsWith(" is")) {
+      const key = getOrCreateKey(match.trim(), textToKeyMap);
+      return `t('${key}')`;
+    }
+    return match;
+  });
+}
+
+function traverseAst(node, callback) {
+  callback(node);
+  if (node.children) {
+    node.children.forEach((child) => traverseAst(child, callback));
+  }
+}
+
+function getOrCreateKey(text, textToKeyMap) {
+  if (!textToKeyMap.has(text)) {
+    const key = `key_${textToKeyMap.size}`;
+    textToKeyMap.set(text, key);
+  }
+  return textToKeyMap.get(text);
+}
+
+function generateTemplateFromAst(node) {
+  if (node.type === NodeTypes.ROOT) {
+    return node.children.map(generateTemplateFromAst).join("");
+  } else if (node.type === NodeTypes.ELEMENT) {
+    const attrs = node.props
+      .map((prop) => {
+        if (prop.type === NodeTypes.ATTRIBUTE) {
+          return `${prop.name}="${prop.value.content}"`;
+        }
+        return "";
+      })
+      .filter(Boolean)
+      .join(" ");
+
+    const children = node.children.map(generateTemplateFromAst).join("");
+    return `<${node.tag}${attrs ? " " + attrs : ""}>${children}</${node.tag}>`;
+  } else if (node.type === NodeTypes.TEXT) {
+    return node.content;
+  } else if (node.type === NodeTypes.INTERPOLATION) {
+    return `{{ ${node.content.content} }}`;
+  }
+  return "";
+}
+
+function generateVueFile(descriptor) {
+  let content = "";
+  if (descriptor.template) {
+    content += `<template>\n${descriptor.template.content}\n</template>\n\n`;
+  }
+  if (descriptor.script) {
+    const scriptTag = `<script${descriptor.script.lang ? ` lang="${descriptor.script.lang}"` : ""}${descriptor.script.setup ? " setup" : ""}>`;
+    content += `${scriptTag}\n${descriptor.script.content}\n</script>\n\n`;
+  }
+  if (descriptor.styles.length > 0) {
+    descriptor.styles.forEach((style) => {
+      content += `<style${style.scoped ? " scoped" : ""}${style.lang ? ` lang="${style.lang}"` : ""}>\n${style.content}\n</style>\n\n`;
     });
   }
+  return content.trim();
 }
 
 function walkDir(dir) {
-  console.log(`正在遍历目录: ${dir}`);
-  const files = fs.readdirSync(dir);
   let results = [];
-
-  files.forEach((file) => {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-
-    if (stat.isDirectory()) {
-      results = results.concat(walkDir(filePath));
-    } else if (path.extname(file) === ".vue") {
-      const chinese = extractChineseFromVue(filePath);
-      results = results.concat(chinese);
+  const list = fs.readdirSync(dir);
+  list.forEach((file) => {
+    file = path.resolve(dir, file);
+    const stat = fs.statSync(file);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(walkDir(file));
+    } else {
+      results.push(file);
     }
   });
-
   return results;
 }
 
-function replaceChineseWithI18n(filePath, chineseTexts) {
-  console.log(`正在替换文件中的中文: ${filePath}`);
-  let content = fs.readFileSync(filePath, "utf-8");
-  chineseTexts.forEach((text, index) => {
-    const key = `key_${index}`;
-    const regex = new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g");
-    content = content.replace(regex, `{{ $t('${key}') }}`);
-  });
-  fs.writeFileSync(filePath, content, "utf-8");
-}
+async function main() {
+  const vueDir = "./src";
+  const allTextToKeyMap = new Map();
 
-function generateI18nJson(chineseTexts) {
-  console.log("正在生成 i18n JSON 文件");
-  const zhJson = {};
-  const enJson = {};
-
-  chineseTexts.forEach((text, index) => {
-    const key = `key_${index}`;
-    zhJson[key] = text;
-    enJson[key] = text;  // 英文暂时使用中文
+  const vueFiles = walkDir(vueDir).filter((file) => file.endsWith(".vue"));
+  vueFiles.forEach((file) => {
+    const fileTextToKeyMap = extractAndReplaceChineseInVue(file);
+    for (const [text, key] of fileTextToKeyMap) {
+      if (!allTextToKeyMap.has(text)) {
+        allTextToKeyMap.set(text, key);
+      }
+    }
   });
 
-  const assetsDir = "./src/assets";
+  // 确保 assets 目录存在
+  const assetsDir = path.join(__dirname, "src", "assets");
   if (!fs.existsSync(assetsDir)) {
     fs.mkdirSync(assetsDir, { recursive: true });
   }
 
-  fs.writeFileSync(path.join(assetsDir, "zh.json"), JSON.stringify(zhJson, null, 2));
-  fs.writeFileSync(path.join(assetsDir, "en.json"), JSON.stringify(enJson, null, 2));
-}
+  // 生成正确格式的翻译对象
+  const translations = {};
+  allTextToKeyMap.forEach((value, key) => {
+    translations[value] = key;
+  });
 
-// 主函数
-function main() {
+  // 写入 zh.json 文件
+  const zhJsonPath = path.join(assetsDir, "zh.json");
+
   try {
-    const vueDir = "./src"; // Vue 项目的源代码目录
-    if (!fs.existsSync(vueDir)) {
-      throw new Error(`目录不存在: ${vueDir}`);
-    }
-
-    const chineseTexts = walkDir(vueDir);
-    const uniqueChineseTexts = [...new Set(chineseTexts)];
-    console.log("提取的中文文本:", uniqueChineseTexts);
-
-    if (uniqueChineseTexts.length === 0) {
-      console.log("警告: 没有找到中文文本");
-      return;
-    }
-
-    // 替换中文为 $t('key') 形式
-    const vueFiles = fs.readdirSync(vueDir).filter(file => path.extname(file) === ".vue");
-    vueFiles.forEach(file => {
-      const filePath = path.join(vueDir, file);
-      replaceChineseWithI18n(filePath, uniqueChineseTexts);
-    });
-
-    // 生成中英文配置 JSON
-    generateI18nJson(uniqueChineseTexts);
-
-    console.log("处理完成！");
+    await fs.promises.writeFile(
+      zhJsonPath,
+      JSON.stringify(translations, null, 2),
+      "utf8"
+    );
+    console.log("成功更新 zh.json 文件");
   } catch (error) {
-    console.error("发生错误:", error);
+    console.error("写入 zh.json 文件时出错:", error);
   }
 }
 
-main();
+// 执行主函数
+main().catch((error) => {
+  console.error("程序执行出错:", error);
+});
+
+// 导出函数以供其他模块使用
+module.exports = {
+  extractAndReplaceChineseInVue,
+  main,
+};
