@@ -3,13 +3,56 @@ const path = require("path");
 const { parse, compileTemplate } = require("@vue/compiler-sfc");
 const { NodeTypes } = require("@vue/compiler-core");
 
+// 全局变量
+const textToKeyMap = new Map();
+
+// 用于替换中文文本的函数
+function replaceChineseInText(text) {
+  const regex = /([\u4e00-\u9fff]+)/g;
+  const parts = [];
+  let lastIndex = 0;
+
+  text.replace(regex, (match, chinese, offset) => {
+    // 添加匹配之前的文本
+    if (offset > lastIndex) {
+      parts.push(`'${text.slice(lastIndex, offset)}'`);
+    }
+
+    // 处理中文
+    const key = getOrCreateKey(chinese.trim());
+    parts.push(`t('${key}')`);
+
+    lastIndex = offset + match.length;
+  });
+
+  // 添加最后剩余的文本
+  if (lastIndex < text.length) {
+    parts.push(`'${text.slice(lastIndex)}'`);
+  }
+
+  // 如果只有一个部分且是中文，直接返回 t 函数调用
+  if (parts.length === 1 && parts[0].startsWith("t(")) {
+    return parts[0];
+  }
+
+  // 否则，使用 + 拼接所有部分
+  return parts.join(" + ");
+}
+
+// 用于获取或创建键的函数
+function getOrCreateKey(text) {
+  if (!textToKeyMap.has(text)) {
+    const key = `key_${textToKeyMap.size}`;
+    textToKeyMap.set(text, key);
+  }
+  return textToKeyMap.get(text);
+}
+
 function extractAndReplaceChineseInVue(filePath) {
   try {
     const source = fs.readFileSync(filePath, "utf-8");
     const { descriptor } = parse(source);
-    const textToKeyMap = new Map();
 
-    // 处理 template 部分
     if (descriptor.template) {
       const { ast } = compileTemplate({
         source: descriptor.template.content,
@@ -27,10 +70,7 @@ function extractAndReplaceChineseInVue(filePath) {
                   typeof value === "string" &&
                   /[\u4e00-\u9fff]/.test(value)
                 ) {
-                  prop.value.content = replaceChineseInText(
-                    value,
-                    textToKeyMap
-                  );
+                  prop.value.content = replaceChineseInText(value);
 
                   // 如果属性不是 v-bind 或以 : 开头，添加绑定
                   if (prop.name !== "v-bind" && prop.name[0] !== ":") {
@@ -43,7 +83,8 @@ function extractAndReplaceChineseInVue(filePath) {
         } else if (node.type === NodeTypes.TEXT) {
           const text = node.content;
           if (typeof text === "string" && /[\u4e00-\u9fff]/.test(text)) {
-            node.content = `{{ ${replaceChineseInText(text, textToKeyMap)} }}`;
+            const replaced = replaceChineseInText(text);
+            node.content = `{{ ${replaced} }}`;
           }
         }
       });
@@ -51,31 +92,22 @@ function extractAndReplaceChineseInVue(filePath) {
       descriptor.template.content = generateTemplateFromAst(ast);
     }
 
-    // 处理普通 script 部分
+    // 处理 script 和 scriptSetup 部分
     if (descriptor.script) {
       descriptor.script.content = replaceChineseInScript(
-        descriptor.script.content,
-        textToKeyMap
+        descriptor.script.content
       );
     }
-
-    // 处理 script setup 部分
     if (descriptor.scriptSetup) {
       descriptor.scriptSetup.content = replaceChineseInScript(
-        descriptor.scriptSetup.content,
-        textToKeyMap
+        descriptor.scriptSetup.content
       );
     }
-
-    // 处理 style 部分（如果需要的话）
-    // 通常我们不需要修改 style 部分，所以这里保持原样
 
     // 重新生成 Vue 文件内容
     const generated = generateVueFile(descriptor);
     fs.writeFileSync(filePath, generated, "utf-8");
     console.log(`文件 ${filePath} 已更新`);
-
-    return textToKeyMap;
   } catch (error) {
     console.error(`处理文件 ${filePath} 时出错:`, error);
     throw error;
@@ -113,31 +145,11 @@ function generateTemplateFromAst(node) {
   return "";
 }
 
-function replaceChineseInText(text, textToKeyMap) {
-  const regex = /([\u4e00-\u9fff]+|[a-zA-Z0-9]+\s+is|[a-zA-Z0-9.]+)/g;
-  return text.replace(regex, (match) => {
-    if (/[\u4e00-\u9fff]/.test(match) || match.endsWith(" is")) {
-      const key = getOrCreateKey(match.trim(), textToKeyMap);
-      return `t('${key}')`;
-    }
-    return match;
-  });
-}
-
-function replaceChineseInScript(scriptContent, textToKeyMap) {
+function replaceChineseInScript(scriptContent) {
   const scriptChineseRegex = /(['"`])([^'"`]*[\u4e00-\u9fff][^'"`]*)['"`]/g;
   return scriptContent.replace(scriptChineseRegex, (match, quote, text) => {
-    const key = getOrCreateKey(text.trim(), textToKeyMap);
-    return `t(${quote}${key}${quote})`;
+    return `t(${quote}${getOrCreateKey(text.trim())}${quote})`;
   });
-}
-
-function getOrCreateKey(text, textToKeyMap) {
-  if (!textToKeyMap.has(text)) {
-    const key = `key_${textToKeyMap.size}`;
-    textToKeyMap.set(text, key);
-  }
-  return textToKeyMap.get(text);
 }
 
 function generateVueFile(descriptor) {
@@ -188,20 +200,13 @@ function generateVueFile(descriptor) {
 // 主函数
 function main() {
   const vueDir = "./src";
-  const allTextToKeyMap = new Map();
-
   const vueFiles = walkDir(vueDir).filter((file) => file.endsWith(".vue"));
   vueFiles.forEach((file) => {
-    const fileTextToKeyMap = extractAndReplaceChineseInVue(file);
-    for (const [text, key] of fileTextToKeyMap) {
-      if (!allTextToKeyMap.has(text)) {
-        allTextToKeyMap.set(text, key);
-      }
-    }
+    extractAndReplaceChineseInVue(file);
   });
 
   // 生成翻译文件
-  const translations = Object.fromEntries(allTextToKeyMap);
+  const translations = Object.fromEntries(textToKeyMap);
   const zhJsonPath = path.join(vueDir, "assets", "zh.json");
   fs.writeFileSync(zhJsonPath, JSON.stringify(translations, null, 2), "utf-8");
   console.log(`生成的翻译文件：${zhJsonPath}`);
