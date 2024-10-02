@@ -69,6 +69,14 @@ function extractAndReplaceChineseInVue(filePath) {
           processTextNode(node);
         } else if (node.type === NodeTypes.TEXT_CALL) {
           processTextCallNode(node);
+        } else if (node.type === NodeTypes.COMPOUND_EXPRESSION) {
+          processCompoundExpressionNode(node);
+        }
+      }
+
+      function processCompoundExpressionNode(node) {
+        if (Array.isArray(node.children)) {
+          processNode(node.children);
         }
       }
 
@@ -170,6 +178,12 @@ function generateTemplateFromAst(node) {
   } else if (node.type === NodeTypes.TEXT_CALL) {
     if (Array.isArray(node.content.children)) {
       return node.content.children.map(generateTemplateFromAst).join("");
+    } else {
+      return node.content;
+    }
+  } else if (node.type === NodeTypes.COMPOUND_EXPRESSION) {
+    if (Array.isArray(node.children)) {
+      return node.children.map(generateTemplateFromAst).join("");
     } else {
       return node.content;
     }
