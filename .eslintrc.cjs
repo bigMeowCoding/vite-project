@@ -24,5 +24,6 @@ module.exports = {
   plugins: ["vue"],
   rules: {
     "no-console": "off",
+    "no-inner-declarations": "off",
   },
 };

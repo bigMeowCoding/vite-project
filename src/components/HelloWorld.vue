@@ -1,22 +1,3 @@
-<script setup>
-import { ref } from "vue";
-import request from "umi-request";
-import { name, work } from "./test.js";
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
-const props = defineProps({
-  msg: String,
-});
-
-const count = ref(0);
-// request.post('/api/getUser',{data:{a:1}}).then((res) => {
-//   console.log(res);
-// });
-// request.post('/api/mock/test',{data:{a:1}}).then((res) => {
-//   console.log(res);
-// });
-</script>
-
 <template>
   {{ name }}
   {{ work }}
@@ -44,6 +25,25 @@ const count = ref(0);
   </p>
   <p class="read-the-docs">点击</p>
 </template>
+
+<script setup>
+import { ref } from "vue";
+import request from "umi-request";
+import { name, work } from "./test.js";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+const props = defineProps({
+  msg: String,
+});
+
+const count = ref(0);
+// request.post('/api/getUser',{data:{a:1}}).then((res) => {
+//   console.log(res);
+// });
+// request.post('/api/mock/test',{data:{a:1}}).then((res) => {
+//   console.log(res);
+// });
+</script>
 
 <style scoped>
 .read-the-docs {
