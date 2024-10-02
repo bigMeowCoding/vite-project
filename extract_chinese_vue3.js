@@ -60,34 +60,56 @@ function extractAndReplaceChineseInVue(filePath) {
         id: "template",
       });
 
-      traverseAst(ast, (node) => {
-        if (node.type === NodeTypes.ELEMENT) {
-          if (Array.isArray(node.props)) {
-            node.props.forEach((prop) => {
-              if (prop.type === NodeTypes.ATTRIBUTE && prop.value) {
-                const value = prop.value.content;
-                if (
-                  typeof value === "string" &&
-                  /[\u4e00-\u9fff]/.test(value)
-                ) {
-                  prop.value.content = replaceChineseInText(value);
+      traverseAst(ast, processNode);
 
-                  // 如果属性不是 v-bind 或以 : 开头，添加绑定
-                  if (prop.name !== "v-bind" && prop.name[0] !== ":") {
-                    prop.name = ":" + prop.name;
-                  }
-                }
-              }
-            });
-          }
+      function processNode(node) {
+        if (node.type === NodeTypes.ELEMENT) {
+          processElementNode(node);
         } else if (node.type === NodeTypes.TEXT) {
-          const text = node.content;
-          if (typeof text === "string" && /[\u4e00-\u9fff]/.test(text)) {
-            const replaced = replaceChineseInText(text);
-            node.content = `{{ ${replaced} }}`;
+          processTextNode(node);
+        } else if (node.type === NodeTypes.TEXT_CALL) {
+          processTextCallNode(node);
+        }
+      }
+
+      function processElementNode(node) {
+        if (Array.isArray(node.props)) {
+          node.props.forEach(processNodeProp);
+        }
+      }
+
+      function processNodeProp(prop) {
+        if (prop.type === NodeTypes.ATTRIBUTE && prop.value) {
+          const value = prop.value.content;
+          if (typeof value === "string" && /[\u4e00-\u9fff]/.test(value)) {
+            prop.value.content = replaceChineseInText(value);
+
+            if (prop.name !== "v-bind" && prop.name[0] !== ":") {
+              prop.name = ":" + prop.name;
+            }
           }
         }
-      });
+      }
+
+      function processTextNode(node) {
+        const text = node.content.trim();
+        if (text && /[\u4e00-\u9fff]/.test(text)) {
+          node.content = replaceChineseInText(text);
+        }
+      }
+
+      function processTextCallNode(node) {
+        // 处理 {{ }} 插值表达式
+        // node.content.children.forEach((child) => {
+        //   if (
+        //     child.type === NodeTypes.TEXT &&
+        //     /[\u4e00-\u9fff]/.test(child.loc.source)
+        //   ) {
+        //     child.loc.source = replaceChineseInText(child.loc.source);
+        //   }
+        // });
+        traverseAst(node.content, processNode);
+      }
 
       descriptor.template.content = generateTemplateFromAst(ast);
     }
@@ -138,9 +160,19 @@ function generateTemplateFromAst(node) {
     const children = node.children.map(generateTemplateFromAst).join("");
     return `<${node.tag}${attrs ? " " + attrs : ""}>${children}</${node.tag}>`;
   } else if (node.type === NodeTypes.TEXT) {
-    return node.content;
+    if (typeof node.content === "string") {
+      return node.content;
+    } else {
+      return node.loc.source;
+    }
   } else if (node.type === NodeTypes.INTERPOLATION) {
-    return `{{ ${node.content.content} }}`;
+    return `{{ ${node.content.loc.source} }}`;
+  } else if (node.type === NodeTypes.TEXT_CALL) {
+    if (Array.isArray(node.content.children)) {
+      return node.content.children.map(generateTemplateFromAst).join("");
+    } else {
+      return node.content;
+    }
   }
   return "";
 }
