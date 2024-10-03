@@ -171,19 +171,39 @@ function generateRootNode(node) {
 
 function generateElementNode(node) {
   const attrs = generateAttributes(node.props);
+  const directives = generateDirectives(node.props);
   const children = node.children.map(generateTemplateFromAst).join("");
-  return `<${node.tag}${attrs ? " " + attrs : ""}>${children}</${node.tag}>`;
+  return `<${node.tag}${attrs ? " " + attrs : ""}${directives ? " " + directives : ""}>${children}</${node.tag}>`;
 }
 
 function generateAttributes(props) {
   return props
+    .filter((prop) => prop.type === NodeTypes.ATTRIBUTE)
     .map((prop) => {
-      if (prop.type === NodeTypes.ATTRIBUTE) {
-        return `${prop.name}="${prop.value.content}"`;
+      if (prop.value === undefined) {
+        return prop.name;
       }
-      return "";
+      return `${prop.name}="${prop.value ? prop.value.content : ""}"`;
     })
-    .filter(Boolean)
+    .join(" ");
+}
+
+function generateDirectives(props) {
+  return props
+    .filter((prop) => prop.type === NodeTypes.DIRECTIVE)
+    .map((prop) => {
+      const { name, exp, arg } = prop;
+      if (name === "on") {
+        // 保留原始的事件处理器表达式
+        return `@${arg.content}="${exp ? exp.loc.source : ""}"`;
+      }
+      if (name === "bind") {
+        // 保留原始的绑定表达式
+        return `:${arg.content}="${exp ? exp.loc.source : ""}"`;
+      }
+      // 对于其他指令，保留原始表达式
+      return `v-${name}${arg ? `:${arg.content}` : ""}="${exp ? exp.content : ""}"`;
+    })
     .join(" ");
 }
 
