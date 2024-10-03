@@ -247,7 +247,13 @@ function generateVueFile(descriptor) {
   // 处理 script setup 部分（如果存在）
   if (descriptor.scriptSetup) {
     const scriptSetupAttrs = Object.entries(descriptor.scriptSetup.attrs || {})
-      .map(([key, value]) => `${key}${value === true ? "" : `="${value}"`}`)
+      .map(([key, value]) => {
+        if (key === "setup" && value === true) {
+          return "";
+        }
+        return `${key}${value === true ? "" : `="${value}"`}`;
+      })
+      .filter(Boolean)
       .join(" ");
     content += `<script setup${scriptSetupAttrs ? " " + scriptSetupAttrs : ""}>\n${descriptor.scriptSetup.content}\n</script>\n\n`;
   }
