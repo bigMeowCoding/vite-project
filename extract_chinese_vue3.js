@@ -102,21 +102,16 @@ function extractAndReplaceChineseInVue(filePath) {
       function processTextNode(node) {
         const text = node.content.trim();
         if (text && /[\u4e00-\u9fff]/.test(text)) {
-          node.content = replaceChineseInText(text);
+          node.content = `{{ ${replaceChineseInText(text)} }}`;
         }
       }
 
       function processTextCallNode(node) {
-        // 处理 {{ }} 插值表达式
-        // node.content.children.forEach((child) => {
-        //   if (
-        //     child.type === NodeTypes.TEXT &&
-        //     /[\u4e00-\u9fff]/.test(child.loc.source)
-        //   ) {
-        //     child.loc.source = replaceChineseInText(child.loc.source);
-        //   }
-        // });
-        traverseAst(node.content, processNode);
+        if (Array.isArray(node.content)) {
+          traverseAst(node.content, processNode);
+        } else {
+          processNode(node.content);
+        }
       }
 
       descriptor.template.content = generateTemplateFromAst(ast);
@@ -152,43 +147,70 @@ function traverseAst(node, callback) {
 }
 
 function generateTemplateFromAst(node) {
-  if (node.type === NodeTypes.ROOT) {
-    return node.children.map(generateTemplateFromAst).join("");
-  } else if (node.type === NodeTypes.ELEMENT) {
-    const attrs = node.props
-      .map((prop) => {
-        if (prop.type === NodeTypes.ATTRIBUTE) {
-          return `${prop.name}="${prop.value.content}"`;
-        }
-        return "";
-      })
-      .filter(Boolean)
-      .join(" ");
-
-    const children = node.children.map(generateTemplateFromAst).join("");
-    return `<${node.tag}${attrs ? " " + attrs : ""}>${children}</${node.tag}>`;
-  } else if (node.type === NodeTypes.TEXT) {
-    if (typeof node.content === "string") {
-      return node.content;
-    } else {
-      return node.loc.source;
-    }
-  } else if (node.type === NodeTypes.INTERPOLATION) {
-    return `{{ ${node.content.loc.source} }}`;
-  } else if (node.type === NodeTypes.TEXT_CALL) {
-    if (Array.isArray(node.content.children)) {
-      return node.content.children.map(generateTemplateFromAst).join("");
-    } else {
-      return node.content;
-    }
-  } else if (node.type === NodeTypes.COMPOUND_EXPRESSION) {
-    if (Array.isArray(node.children)) {
-      return node.children.map(generateTemplateFromAst).join("");
-    } else {
-      return node.content;
-    }
+  switch (node.type) {
+    case NodeTypes.ROOT:
+      return generateRootNode(node);
+    case NodeTypes.ELEMENT:
+      return generateElementNode(node);
+    case NodeTypes.TEXT:
+      return generateTextNode(node);
+    case NodeTypes.INTERPOLATION:
+      return generateInterpolationNode(node);
+    case NodeTypes.TEXT_CALL:
+      return generateTextCallNode(node);
+    case NodeTypes.COMPOUND_EXPRESSION:
+      return generateCompoundExpressionNode(node);
+    default:
+      return "";
   }
-  return "";
+}
+
+function generateRootNode(node) {
+  return node.children.map(generateTemplateFromAst).join("");
+}
+
+function generateElementNode(node) {
+  const attrs = generateAttributes(node.props);
+  const children = node.children.map(generateTemplateFromAst).join("");
+  return `<${node.tag}${attrs ? " " + attrs : ""}>${children}</${node.tag}>`;
+}
+
+function generateAttributes(props) {
+  return props
+    .map((prop) => {
+      if (prop.type === NodeTypes.ATTRIBUTE) {
+        return `${prop.name}="${prop.value.content}"`;
+      }
+      return "";
+    })
+    .filter(Boolean)
+    .join(" ");
+}
+
+function generateTextNode(node) {
+  return typeof node.content === "string" ? node.content : node.loc.source;
+}
+
+function generateInterpolationNode(node) {
+  return `{{ ${node.content.loc.source} }}`;
+}
+
+function generateTextCallNode(node) {
+  if (Array.isArray(node.content.children)) {
+    return node.content.children.map(generateTemplateFromAst).join("");
+  }
+  if (typeof node.content === "string") {
+    return node.content;
+  } else {
+    return generateTemplateFromAst(node.content);
+  }
+}
+
+function generateCompoundExpressionNode(node) {
+  if (Array.isArray(node.children)) {
+    return node.children.map(generateTemplateFromAst).join("");
+  }
+  return node.content;
 }
 
 function replaceChineseInScript(scriptContent) {
