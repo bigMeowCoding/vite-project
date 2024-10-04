@@ -257,73 +257,43 @@ function replaceChineseInScript(scriptContent) {
     },
     TemplateLiteral(path) {
       const { quasis, expressions } = path.node;
-      const newQuasis = [];
-      const newExpressions = [];
+      let newQuasis = [];
+      let newExpressions = [];
 
       quasis.forEach((quasi, index) => {
         const value = quasi.value.raw;
-        if (/[\u4e00-\u9fff]/.test(value)) {
-          // 直接使用正则表达式匹配中文字符，无需先分割
-          const regex = /([\u4e00-\u9fff]+)|(\s+)|([^\s\u4e00-\u9fff]+)/g;
-          let match;
-          let lastIndex = 0;
-          while ((match = regex.exec(value)) !== null) {
-            const [fullMatch, chinese] = match;
+        const parts = value.split(/([\u4e00-\u9fff]+)/);
+        let newQuasiValue = "";
 
-            if (chinese) {
-              if (lastIndex < match.index) {
-                newQuasis.push(
-                  t.templateElement(
-                    {
-                      raw: value.slice(lastIndex, match.index),
-                      cooked: value.slice(lastIndex, match.index),
-                    },
-                    false
-                  )
-                );
-              }
-              const key = getOrCreateKey(chinese);
-              newExpressions.push(
-                t.callExpression(t.identifier("t"), [t.stringLiteral(key)])
-              );
-            } else {
-              // 对于空白和其他字符，直接添加到 quasis
-              newQuasis.push(
-                t.templateElement({ raw: fullMatch, cooked: fullMatch }, false)
-              );
-            }
-
-            lastIndex = match.index + fullMatch.length;
-
-            // 防止死循环
-            if (regex.lastIndex === lastIndex) {
-              regex.lastIndex++;
-            }
-          }
-
-          if (lastIndex < value.length) {
-            newQuasis.push(
-              t.templateElement(
-                { raw: value.slice(lastIndex), cooked: value.slice(lastIndex) },
-                index === quasis.length - 1
-              )
+        parts.forEach((part) => {
+          if (/[\u4e00-\u9fff]/.test(part)) {
+            const key = getOrCreateKey(part);
+            newExpressions.push(
+              t.callExpression(t.identifier("t"), [t.stringLiteral(key)])
             );
+            newQuasis.push(t.templateElement({ raw: "", cooked: "" }));
+            newQuasiValue = "";
+          } else {
+            newQuasiValue += part;
           }
-        } else {
-          newQuasis.push(quasi);
-        }
+        });
+
+        newQuasis.push(
+          t.templateElement(
+            { raw: newQuasiValue, cooked: newQuasiValue },
+            index === quasis.length - 1
+          )
+        );
 
         if (index < expressions.length) {
           newExpressions.push(expressions[index]);
         }
       });
 
-      // 确保 quasis 的数量比 expressions 多一个
-      if (newQuasis.length === newExpressions.length) {
-        newQuasis.push(t.templateElement({ raw: "", cooked: "" }, true));
-      }
-
-      // path.replaceWith(t.templateLiteral(newQuasis, newExpressions));
+      const newNode = t.templateLiteral(newQuasis, newExpressions);
+      newNode.processed = true; // 标记这个节点已经被处理
+      path.replaceWith(newNode);
+      path.skip(); // 跳过对新节点的遍历
     },
   });
 
