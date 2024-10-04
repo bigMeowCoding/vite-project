@@ -7,7 +7,6 @@ const { NodeTypes } = require("@vue/compiler-core");
 const textToKeyMap = new Map();
 
 // 在文件顶部定义 translations 对象
-const translations = {};
 
 // 用于替换中文文本的函数
 function replaceChineseInText(text) {
@@ -295,7 +294,7 @@ function replaceChineseInScript(scriptContent) {
             }
 
             lastIndex = match.index + fullMatch.length;
-            
+
             // 防止死循环
             if (regex.lastIndex === lastIndex) {
               regex.lastIndex++;
@@ -392,7 +391,10 @@ function main() {
 
   // 生成翻译文件
   const zhJsonPath = path.join(vueDir, "assets", "zh.json");
-  fs.writeFileSync(zhJsonPath, JSON.stringify(translations, null, 2), "utf-8");
+  const reversedMap = Object.fromEntries(
+    Array.from(textToKeyMap.entries()).map(([key, value]) => [value, key])
+  );
+  fs.writeFileSync(zhJsonPath, JSON.stringify(reversedMap, null, 2), "utf-8");
   console.log(`生成的翻译文件：${zhJsonPath}`);
 }
 
@@ -418,5 +420,4 @@ module.exports = {
   extractAndReplaceChineseInVue,
   main,
   replaceChineseInScript,
-  translations,
 };
