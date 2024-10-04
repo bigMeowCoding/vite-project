@@ -200,8 +200,25 @@ function generateDirectives(props) {
         return `@${arg.content}="${exp ? exp.loc.source : ""}"`;
       }
       if (name === "bind") {
-        // 保留原始的绑定表达式
-        return `:${arg.content}="${exp ? exp.loc.source : ""}"`;
+        // 保留原始的绑定表达式，并处理可能的 JSON 字符串
+        let expContent = exp ? exp.content : "";
+        try {
+          // 尝试解析 JSON
+          const jsonObj = JSON.parse(expContent);
+          // 如果成功解析，将对象转换为有效的 Vue 绑定表达式
+          expContent = Object.entries(jsonObj)
+            .map(
+              ([key, value]) =>
+                `${key}:${JSON.stringify(value).replace(/"/g, "'")}`
+            )
+            .join(",");
+          // 用花括号包裹，形成有效的对象字面量
+          expContent = `{${expContent}}`;
+        } catch (e) {
+          // 如果解析失败，保持原样，但将双引号替换为单引号
+          expContent = exp ? exp.content : "";
+        }
+        return `:${arg.content}="${expContent}"`;
       }
       // 对于其他指令，保留原始表达式
       return `v-${name}${arg ? `:${arg.content}` : ""}="${exp ? exp.content : ""}"`;
