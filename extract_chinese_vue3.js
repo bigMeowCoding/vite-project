@@ -6,6 +6,9 @@ const { NodeTypes } = require("@vue/compiler-core");
 // 全局变量
 const textToKeyMap = new Map();
 
+// 在文件顶部定义 translations 对象
+const translations = {};
+
 // 用于替换中文文本的函数
 function replaceChineseInText(text) {
   const regex = /([\u4e00-\u9fff]+)/g;
@@ -39,7 +42,7 @@ function replaceChineseInText(text) {
   return parts.join(" + ");
 }
 
-// 用于获取或创建键的函数
+// 用于获取或建键的函数
 function getOrCreateKey(text) {
   if (!textToKeyMap.has(text)) {
     const key = `key_${textToKeyMap.size}`;
@@ -234,10 +237,98 @@ function generateCompoundExpressionNode(node) {
 }
 
 function replaceChineseInScript(scriptContent) {
-  const scriptChineseRegex = /(['"`])([^'"`]*[\u4e00-\u9fff][^'"`]*)['"`]/g;
-  return scriptContent.replace(scriptChineseRegex, (match, quote, text) => {
-    return `t(${quote}${getOrCreateKey(text.trim())}${quote})`;
+  const { parse } = require("@babel/parser");
+  const traverse = require("@babel/traverse").default;
+  const t = require("@babel/types");
+  const generate = require("@babel/generator").default;
+  const ast = parse(scriptContent, {
+    sourceType: "module",
+    plugins: ["jsx"],
   });
+
+  traverse(ast, {
+    StringLiteral(path) {
+      const value = path.node.value;
+      if (/[\u4e00-\u9fff]/.test(value)) {
+        const key = getOrCreateKey(value);
+        path.replaceWith(
+          t.callExpression(t.identifier("t"), [t.stringLiteral(key)])
+        );
+      }
+    },
+    TemplateLiteral(path) {
+      const { quasis, expressions } = path.node;
+      const newQuasis = [];
+      const newExpressions = [];
+
+      quasis.forEach((quasi, index) => {
+        const value = quasi.value.raw;
+        if (/[\u4e00-\u9fff]/.test(value)) {
+          // 直接使用正则表达式匹配中文字符，无需先分割
+          const regex = /([\u4e00-\u9fff]+)|(\s+)|([^\s\u4e00-\u9fff]+)/g;
+          let match;
+          let lastIndex = 0;
+          while ((match = regex.exec(value)) !== null) {
+            const [fullMatch, chinese] = match;
+
+            if (chinese) {
+              if (lastIndex < match.index) {
+                newQuasis.push(
+                  t.templateElement(
+                    {
+                      raw: value.slice(lastIndex, match.index),
+                      cooked: value.slice(lastIndex, match.index),
+                    },
+                    false
+                  )
+                );
+              }
+              const key = getOrCreateKey(chinese);
+              newExpressions.push(
+                t.callExpression(t.identifier("t"), [t.stringLiteral(key)])
+              );
+            } else {
+              // 对于空白和其他字符，直接添加到 quasis
+              newQuasis.push(
+                t.templateElement({ raw: fullMatch, cooked: fullMatch }, false)
+              );
+            }
+
+            lastIndex = match.index + fullMatch.length;
+            
+            // 防止死循环
+            if (regex.lastIndex === lastIndex) {
+              regex.lastIndex++;
+            }
+          }
+
+          if (lastIndex < value.length) {
+            newQuasis.push(
+              t.templateElement(
+                { raw: value.slice(lastIndex), cooked: value.slice(lastIndex) },
+                index === quasis.length - 1
+              )
+            );
+          }
+        } else {
+          newQuasis.push(quasi);
+        }
+
+        if (index < expressions.length) {
+          newExpressions.push(expressions[index]);
+        }
+      });
+
+      // 确保 quasis 的数量比 expressions 多一个
+      if (newQuasis.length === newExpressions.length) {
+        newQuasis.push(t.templateElement({ raw: "", cooked: "" }, true));
+      }
+
+      // path.replaceWith(t.templateLiteral(newQuasis, newExpressions));
+    },
+  });
+
+  return generate(ast).code;
 }
 
 function generateVueFile(descriptor) {
@@ -300,7 +391,6 @@ function main() {
   });
 
   // 生成翻译文件
-  const translations = Object.fromEntries(textToKeyMap);
   const zhJsonPath = path.join(vueDir, "assets", "zh.json");
   fs.writeFileSync(zhJsonPath, JSON.stringify(translations, null, 2), "utf-8");
   console.log(`生成的翻译文件：${zhJsonPath}`);
@@ -327,4 +417,6 @@ main();
 module.exports = {
   extractAndReplaceChineseInVue,
   main,
+  replaceChineseInScript,
+  translations,
 };
