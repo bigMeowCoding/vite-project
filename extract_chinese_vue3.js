@@ -199,6 +199,9 @@ function generateDirectives(props) {
         // 保留原始的事件处理器表达式
         return `@${arg.content}="${exp ? exp.loc.source : ""}"`;
       }
+      if (name === "model") {
+        return `v-model${arg ? `:${arg.content}` : ""}="${exp ? exp.loc.source : ""}"`;
+      }
       if (name === "bind") {
         // 保留原始的绑定表达式，并处理可能的 JSON 字符串
         let expContent = exp ? exp.content : "";
