@@ -11,8 +11,8 @@
   >
     <el-option label="中文" value="zh" />
     <el-option label="English" value="en" />
-    <HelloWorld msg="你好" />
   </el-select>
+  <HelloWorld msg="你好" />
 </template>
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
