@@ -31,6 +31,8 @@
     "eslint-plugin-vue": "^9.22.0",
     "esprima": "^4.0.1",
     "prettier": "^3.2.5",
+    "rollup-plugin-external-globals": "^0.12.0",
+    "rollup-plugin-visualizer": "^5.12.0",
     "tencentcloud-sdk-nodejs-tmt": "4.0.643",
     "typescript": "^4.6.4",
     "vite": "^3.0.7",

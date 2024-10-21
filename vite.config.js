@@ -2,16 +2,31 @@
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { visualizer } from "rollup-plugin-visualizer";
+import externalGlobals from "rollup-plugin-external-globals";
+
+const globals = externalGlobals({
+  echarts: "echarts",
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-  const plugins = [vue()];
+  const plugins = [
+    vue(),
+    visualizer({
+      emitFile: true,
+      filename: "stats.html",
+      open: true,
+    }),
+  ];
 
   return {
     plugins,
     build: {
-      minify: false, // 禁用代码压缩
-      target: "esnext", // 保持 ES6 语法
+      rollupOptions: {
+        external: ["echarts"],
+        plugins: [globals],
+      },
     },
   };
 });
