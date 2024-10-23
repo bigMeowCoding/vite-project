@@ -6,4 +6,8 @@ import BarDemo2 from "./components/BarDemo2.vue";
   <BarDemo2></BarDemo2>
 </template>
 
-<style scoped></style>
+<style scoped>
+.b {
+  color: blue;
+}
+</style>
