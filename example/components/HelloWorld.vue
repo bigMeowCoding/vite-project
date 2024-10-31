@@ -30,9 +30,11 @@
 import { ref } from "vue";
 import request from "umi-request";
 import { name, work } from "./test.js";
+import { useI18n } from "vue-i18n";
 defineProps({
   msg: String,
 });
+const { t } = useI18n();
 
 const count = ref(0);
 // request.post('/api/getUser',{data:{a:1}}).then((res) => {
