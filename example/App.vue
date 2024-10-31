@@ -1,21 +1,17 @@
 <template>
-  <el-select
-    placeholder="Select"
-    v-model="locale"
-    @change="
+<el-select placeholder="Select" v-model="locale" @change="
       (val) => {
         setLanguage(val);
       }
-    "
-    :style="{ width: '240px' }"
-    ><el-option :label="t('key_0')" value="zh"></el-option
-    ><el-option label="English" value="en"></el-option></el-select
-  ><HelloWorld :msg="t('key_1')"></HelloWorld>
+    " :style="{ width: '240px' }"><el-option value="zh" :label="undefined"></el-option><el-option label="English" value="en"></el-option></el-select><HelloWorld :msg="undefined"></HelloWorld>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
-const { t, locale } = useI18n();
+const {
+  t,
+  locale
+} = useI18n();
 import HelloWorld from "./components/HelloWorld.vue";
 
 // 欢迎使用我们的多语言应用
@@ -23,20 +19,16 @@ const welcomeMessage = t("key_2");
 console.log(welcomeMessage);
 
 // 语言选项
-const languageOptions = [
-  {
-    label: t("key_3"),
-    value: "zh-CN",
-  },
-  {
-    label: t("key_4"),
-    value: "zh-TW",
-  },
-  {
-    label: "English",
-    value: "en",
-  },
-];
+const languageOptions = [{
+  label: t("key_3"),
+  value: "zh-CN"
+}, {
+  label: t("key_4"),
+  value: "zh-TW"
+}, {
+  label: "English",
+  value: "en"
+}];
 
 // 设置语言函数
 function setLanguage(val) {
@@ -63,7 +55,9 @@ console.log(getGreeting());
 </script>
 
 <style scoped>
+
 .a {
   color: red;
 }
+
 </style>

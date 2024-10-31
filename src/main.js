@@ -1,13 +1,23 @@
-import { createApp } from "vue";
-import { createPinia } from "pinia";
-import i18n from "./i18n";
+const fs = require("fs");
+const path = require("path");
+const { getTextToKeyMap } = require("./utils/textToKeyMap");
+const { walkDir } = require("./utils/walkDir");
+const {
+  extractAndReplaceChineseInVue,
+} = require("./transformer/extractAndReplaceChineseInVue");
 
-import "./style.css";
-import App from "./App.vue";
+console.log("cwd", process.cwd());
+const vueDir = path.join(process.cwd(), "./example");
+const vueFiles = walkDir(vueDir).filter((file) => file.endsWith(".vue"));
+vueFiles.forEach((file) => {
+  extractAndReplaceChineseInVue(file);
+});
 
-const pinia = createPinia();
-const app = createApp(App);
-app.use(pinia);
-app.use(i18n);
-
-app.mount("#app");
+// 生成翻译文件
+const zhJsonPath = path.join(vueDir, "assets", "zh.json");
+const textToKeyMap = getTextToKeyMap();
+const reversedMap = Object.fromEntries(
+  Array.from(textToKeyMap.entries()).map(([key, value]) => [value, key]),
+);
+fs.writeFileSync(zhJsonPath, JSON.stringify(reversedMap, null, 2), "utf-8");
+console.log(`生成的翻译文件：${zhJsonPath}`);

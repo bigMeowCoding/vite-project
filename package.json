@@ -8,7 +8,7 @@
     "bale": "node ./ast/demo1.js",
     "preview": "vite preview",
     "translate": "node ./translate.js",
-    "extract": "node ./build/main.js"
+    "extract": "node src/main.js"
   },
   "dependencies": {
     "element-plus": "^2.6.0",
