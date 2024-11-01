@@ -11,7 +11,10 @@
     "extract": "node src/main.js"
   },
   "dependencies": {
+    "ejs": "^3.1.10",
     "element-plus": "^2.6.0",
+    "htmlparser2": "^9.1.0",
+    "mustache": "^4.2.0",
     "pinia": "2.0.14",
     "rollup-plugin-i18n-auto": "^0.1.2",
     "umi-request": "^1.4.0",
