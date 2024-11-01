@@ -4,7 +4,17 @@ const { generateVueFile } = require("./generateVueFile");
 const { replaceChineseInScript } = require("./replaceChineseInScript");
 const ejs = require("ejs");
 const htmlparser2 = require("htmlparser2");
+const { escapeSpecialChar } = require("../utils/escapeSpecialChar");
+const mustache = require("mustache");
+const { includeChinese } = require("../utils/includeChinese");
+const { getReplaceValue } = require("../utils/getReplaceValue");
+const COMMENT_TYPE = "!";
+const Collector = require("../utils/collector");
+const customizeKey = (key) => {
+  key = key.replace(/\./g, "_").replace(/ /g, "").replace(/\[|\]/g, "_");
 
+  return `${key}`;
+};
 function extractAndReplaceChineseInVue(filePath) {
   try {
     const source = fs.readFileSync(filePath, "utf-8");
@@ -38,13 +48,56 @@ function extractAndReplaceChineseInVue(filePath) {
     throw error;
   }
 }
+
+function parseTextNode(text) {
+  let str = "";
+  let tokens = [];
+
+  try {
+    tokens = mustache.parse(text);
+    console.log("parse", text, tokens);
+  } catch (error) {
+    return text;
+  }
+
+  for (let token of tokens) {
+    const type = token[0];
+    const value = token[1];
+    if (includeChinese(value)) {
+      if (type === "text") {
+        const translationKey = Collector.add(value, customizeKey);
+        str += `{{${getReplaceValue(translationKey)}}}`;
+      } else if (type === "name") {
+        str += `{{${value}}`;
+      } else if (type === COMMENT_TYPE) {
+        str += `{{!${value}}}`;
+      }
+    } else {
+      if (type === "text") {
+        str += value;
+      } else if (type === "name") {
+        str += `{{${value}}`;
+      } else if (type === COMMENT_TYPE) {
+        str += `{{!${value}}}`;
+      }
+    }
+  }
+  return str;
+}
+
 function templateHandle(code) {
   let htmlString = "";
   let attrsCache = {};
+  let textNodeCache = ""; // 缓存当前文本节点内容
   const parser = new htmlparser2.Parser(
     {
       onopentag(name) {
         console.log("opentag", name);
+        let text = parseTextNode(textNodeCache);
+        console.log("parseText", text);
+
+        htmlString += text;
+        textNodeCache = "";
       },
       onattribute(name, value, quote) {
         console.log("onatrribute", name, value);
@@ -59,8 +112,9 @@ function templateHandle(code) {
         }
       },
       ontext(text) {
-        htmlString += text;
         console.log("text", text);
+        text = escapeSpecialChar(text);
+        textNodeCache += text;
       },
       onclosetag(name, isImplied) {
         console.log("closetag=====", name, isImplied);
