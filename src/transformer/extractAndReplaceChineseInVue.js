@@ -10,6 +10,9 @@ const { includeChinese } = require("../utils/includeChinese");
 const { getReplaceValue } = require("../utils/getReplaceValue");
 const COMMENT_TYPE = "!";
 const Collector = require("../utils/collector");
+const { transformJs } = require("./transformJs");
+const { initParse } = require("../parser/initParse");
+const prettier = require("prettier");
 const customizeKey = (key) => {
   key = key.replace(/\./g, "_").replace(/ /g, "").replace(/\[|\]/g, "_");
 
@@ -48,7 +51,38 @@ function extractAndReplaceChineseInVue(filePath) {
     throw error;
   }
 }
+function paseJsSyntax(source) {
+  // html属性有可能是{xx:xx}这种对象形式，直接解析会报错，需要特殊处理。
+  // 先处理成temp = {xx:xx} 让babel解析，解析完再还原成{xx:xx}
+  let isObjectStruct = false;
+  if (source.startsWith("{") && source.endsWith("}")) {
+    isObjectStruct = true;
+    source = `temp=${source}`;
+  }
+  // console.log(source, "source");
 
+  const { code } = transformJs(source, {
+    parse: initParse(),
+  });
+  let stylizedCode = prettier.format(code, {
+    singleQuote: true,
+    semi: false,
+    parser: "babel",
+    sync: true
+  });
+  //
+  // pretter格式化后有时会多出分号
+  if (stylizedCode.startsWith(";")) {
+    stylizedCode = stylizedCode.slice(1);
+  }
+
+  if (isObjectStruct) {
+    stylizedCode = stylizedCode.replace("temp = ", "");
+  }
+  return stylizedCode.endsWith("\n")
+    ? stylizedCode.slice(0, stylizedCode.length - 1)
+    : stylizedCode;
+}
 function parseTextNode(text) {
   let str = "";
   let tokens = [];
@@ -94,7 +128,7 @@ function templateHandle(code) {
       onopentag(name) {
         console.log("opentag", name);
         let text = parseTextNode(textNodeCache);
-        console.log("parseText", text);
+        // console.log("parseText", text);
 
         htmlString += text;
         textNodeCache = "";
@@ -176,4 +210,4 @@ function generationSource(sfc, handle) {
   });
 }
 
-module.exports = { extractAndReplaceChineseInVue };
+module.exports = { paseJsSyntax, extractAndReplaceChineseInVue };
