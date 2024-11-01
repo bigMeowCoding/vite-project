@@ -13,11 +13,8 @@ const Collector = require("../utils/collector");
 const { transformJs } = require("./transformJs");
 const { initParse } = require("../parser/initParse");
 const prettier = require("prettier");
-const customizeKey = (key) => {
-  key = key.replace(/\./g, "_").replace(/ /g, "").replace(/\[|\]/g, "_");
+const { customizeKey } = require("../config/enums");
 
-  return `${key}`;
-};
 function extractAndReplaceChineseInVue(filePath) {
   try {
     const source = fs.readFileSync(filePath, "utf-8");
@@ -51,7 +48,7 @@ function extractAndReplaceChineseInVue(filePath) {
     throw error;
   }
 }
-function paseJsSyntax(source) {
+function parseJsSyntax(source) {
   // html属性有可能是{xx:xx}这种对象形式，直接解析会报错，需要特殊处理。
   // 先处理成temp = {xx:xx} 让babel解析，解析完再还原成{xx:xx}
   let isObjectStruct = false;
@@ -68,7 +65,7 @@ function paseJsSyntax(source) {
     singleQuote: true,
     semi: false,
     parser: "babel",
-    sync: true
+    sync: true,
   });
   //
   // pretter格式化后有时会多出分号
@@ -102,9 +99,12 @@ function parseTextNode(text) {
         const translationKey = Collector.add(value, customizeKey);
         str += `{{${getReplaceValue(translationKey)}}}`;
       } else if (type === "name") {
-        str += `{{${value}}`;
+        const source = parseJsSyntax(value);
+
+        str += `{{${source}}`;
       } else if (type === COMMENT_TYPE) {
-        str += `{{!${value}}}`;
+        const source = parseJsSyntax(`!${value}`);
+        str += `{{${source}}}`;
       }
     } else {
       if (type === "text") {
@@ -210,4 +210,4 @@ function generationSource(sfc, handle) {
   });
 }
 
-module.exports = { paseJsSyntax, extractAndReplaceChineseInVue };
+module.exports = { paseJsSyntax: parseJsSyntax, extractAndReplaceChineseInVue };

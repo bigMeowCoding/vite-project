@@ -4,9 +4,9 @@ import { paseJsSyntax } from "../extractAndReplaceChineseInVue";
 describe("paseJsSyntax Function Tests", () => {
   // 测试普通字符串输入
   test("should handle normal string input without change", () => {
-    const input = "const x = 5";
+    const input = "const name = '周义竣'";
     const output = paseJsSyntax(input);
-    expect(output).toBe(input);
+    expect(output).toBe("const name = $t('周义竣')");
   });
 
   // 测试对象字面量输入

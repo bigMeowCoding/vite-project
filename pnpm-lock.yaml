@@ -49,6 +49,9 @@ devDependencies:
   '@babel/parser':
     specifier: ^7.22.7
     version: 7.26.2
+  '@babel/template':
+    specifier: ^7.25.9
+    version: 7.25.9
   '@babel/traverse':
     specifier: ^7.22.8
     version: 7.25.9
