@@ -1,7 +1,5 @@
 const fs = require("fs");
 const { parse } = require("@vue/compiler-sfc");
-const { generateVueFile } = require("./generateVueFile");
-const { replaceChineseInScript } = require("./replaceChineseInScript");
 const ejs = require("ejs");
 const htmlparser2 = require("htmlparser2");
 const { escapeSpecialChar } = require("../utils/escapeSpecialChar");
@@ -14,12 +12,15 @@ const { transformJs } = require("./transformJs");
 const { initParse } = require("../parser/initParse");
 const prettier = require("prettier");
 const { customizeKey } = require("../config/enums");
-
+const { getOutputPath } = require("../utils/getOutputPath");
 function extractAndReplaceChineseInVue(filePath) {
+  let templateCode = "";
+
   try {
+    Collector.setCurrentCollectorPath(filePath);
+    Collector.resetCountOfAdditions();
     const source = fs.readFileSync(filePath, "utf-8");
     const { descriptor } = parse(source);
-    let templateCode = "";
 
     if (descriptor.template) {
       templateCode = generationSource(descriptor.template, templateHandle);
@@ -43,6 +44,12 @@ function extractAndReplaceChineseInVue(filePath) {
     // const generated = generateVueFile(descriptor);
     // fs.writeFileSync(filePath, generated, "utf-8");
     // console.log(`文件 ${filePath} 已更新`);
+    // 只有文件提取过中文，或文件规则forceImport为true时，才重新写入文件
+    if (Collector.getCountOfAdditions() > 0) {
+      const outputPath = getOutputPath("", "", filePath);
+      fs.writeFileSync(outputPath, templateCode, "utf8");
+    }
+    Collector.resetCurrentFileKeyMap();
   } catch (error) {
     console.error(`处理文件 ${filePath} 时出错:`, error);
     throw error;
@@ -132,6 +139,7 @@ function templateHandle(code) {
 
         htmlString += text;
         textNodeCache = "";
+        htmlString += `<${name} >`;
       },
       onattribute(name, value, quote) {
         console.log("onatrribute", name, value);
@@ -152,9 +160,17 @@ function templateHandle(code) {
       },
       onclosetag(name, isImplied) {
         console.log("closetag=====", name, isImplied);
+        // console.log("parseText", text);
+        let text = parseTextNode(textNodeCache);
+        htmlString += text;
+        textNodeCache = "";
+
+        // 如果是自闭合标签
         if (isImplied) {
+          htmlString = htmlString.slice(0, htmlString.length - 2) + "/>";
           return;
         }
+        htmlString += `</${name}>`;
       },
       oncomment(text, isImplied) {
         console.log("comment", text, isImplied);
@@ -165,7 +181,7 @@ function templateHandle(code) {
       recognizeSelfClosing: true,
       lowerCaseAttributeNames: false,
       decodeEntities: false,
-    },
+    }
   );
   parser.write(code);
   parser.end();
