@@ -1,7 +1,8 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import i18n from './i18n/index.js'
-
+import formCreateMobile from "@form-create/vant";
+import "vant/lib/index.css";
+import vant from "vant";
 import "./style.css";
 import App from "./App.vue";
 // import { default as i18n } from "./i18n";
@@ -9,7 +10,8 @@ import App from "./App.vue";
 const pinia = createPinia();
 const app = createApp(App);
 app.use(pinia);
+app.use(vant);
 
-app.use(i18n);
+app.use(formCreateMobile);
 
 app.mount("#app");

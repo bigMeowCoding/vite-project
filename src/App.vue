@@ -1,95 +1,64 @@
-<script setup lang="ts">
-import { useI18n } from "vue-i18n";
-const { t, locale } = useI18n();
-// const { locale, setLanguage } = useStore();
-function setLanguage(val) {
-  console.log(val);
-  locale.value = val;
-}
-const tableData = [
-  {
-    id: "12987122",
-    name: "Tom",
-    amount1: "234",
-    amount2: "3.2",
-    amount3: 10,
-  },
-  {
-    id: "12987123",
-    name: "Tom",
-    amount1: "165",
-    amount2: "4.43",
-    amount3: 12,
-  },
-  {
-    id: "12987124",
-    name: "Tom",
-    amount1: "324",
-    amount2: "1.9",
-    amount3: 9,
-  },
-  {
-    id: "12987125",
-    name: "TomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTomTom",
-    amount1: "621",
-    amount2: "2.2",
-    width: 100,
-    amount3: 17,
-  },
-  {
-    id: "12987126",
-    name: "Tom",
-    amount1: "539",
-    amount2: "4.1",
-    amount3: 15,
-  },
-];
-
-const arraySpanMethod = ({ row, column, rowIndex, columnIndex }) => {
-  if (rowIndex % 2 === 0) {
-    if (columnIndex === 0) {
-      return [1, 2];
-    } else if (columnIndex === 1) {
-      return [0, 0];
-    }
-  }
-};
-</script>
-
 <template>
-  <!--  <el-table-->
-  <!--    :data="tableData"-->
-  <!--    :span-method="arraySpanMethod"-->
-  <!--    border-->
-  <!--    :tooltip-options="{ effect: 'light', trigger: 'click', enterable: true }"-->
-  <!--    style="width: 100%"-->
-  <!--  >-->
-  <!--    <el-table-column prop="id" label="ID" width="180" />-->
+  <van-checkbox v-model="checked" disabled>复选框</van-checkbox>
 
-  <!--    <el-table-column-->
-  <!--      prop="name"-->
-  <!--      label="Name"-->
-  <!--      :show-overflow-tooltip="true"-->
-  <!--      width="100"-->
-  <!--    />-->
-  <!--    <el-table-column prop="amount1" sortable label="Amount 1" />-->
-  <!--    <el-table-column prop="amount2" sortable label="Amount 2" />-->
-  <!--    <el-table-column prop="amount3" sortable label="Amount 3" />-->
-  <!--  </el-table>-->
-  <el-select
-    v-model="locale"
-    placeholder="Select"
-    @change="
-      (val) => {
-        setLanguage(val);
-      }
-    "
-    style="width: 240px"
-  >
-    <el-option label="中文" value="zh" />
-    <el-option label="English" value="en" />
-  </el-select>
-  <HelloWorld msg="你好"></HelloWorld>
+  <!-- 使用 form-create-mobile 组件 -->
+  <form-create-mobile
+    :rule="rule"
+    v-model:api="fApi"
+    v-model="formData"
+    :option="options"
+  />
 </template>
 
-<style scoped></style>
+<script setup>
+import { ref } from "vue";
+import formCreateMobile from "@form-create/vant";
+const fApi = ref({});
+const formData = ref({});
+const options = {
+  onSubmit: (formData) => {
+    alert(JSON.stringify(formData)); // 提交表单时弹出表单数据
+  },
+  resetBtn: true, // 显示重置按钮
+};
+const rule = ref([
+  {
+    type: "input",
+    field: "goods_name",
+    title: "商品名称",
+    value: "form-create",
+  },
+  {
+    type: "checkbox",
+    title: "多选框",
+    field: "checkbox",
+    value: ["1"],
+    props: {
+      options: [
+        {
+          text: "复选框1",
+          value: "1",
+        },
+        {
+          text: "复选框2",
+          value: "2",
+        },
+      ],
+    },
+  },
+  {
+    type: "checkbox",
+    field: "label",
+    title: "标签",
+    // value: [0, 1, 2, 3],
+    props: {
+      options: [
+        { label: "好用", value: 0 },
+        { label: "快速", value: 1 },
+        { label: "高效", value: 2 },
+        { label: "全能", value: 3 },
+      ],
+    },
+  },
+]);
+</script>
