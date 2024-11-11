@@ -9,6 +9,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
+    FormCreate: typeof import('./src/components/form-create.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    VantForm: typeof import('./src/components/vant-form.vue')['default']
   }
 }
