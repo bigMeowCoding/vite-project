@@ -2,9 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { walkDir } = require("../utils/walkDir");
 const Collector = require("../utils/collector");
-const {
-  extractAndReplaceChineseInVue,
-} = require("../transformer/extractAndReplaceChineseInVue.js");
+const { changeSourceTarget } = require("./changeSourceTarget");
 
 function genreI18n(options) {
   console.log("cwd", process.cwd());
@@ -13,9 +11,10 @@ function genreI18n(options) {
   const localePath = path.join(process.cwd(), "src", "assets", "zh.json");
 
   vueFiles.forEach((file) => {
-    extractAndReplaceChineseInVue(file);
-    saveAllLocaleData(localePath);
+    changeSourceTarget(file, options);
   });
+
+  saveAllLocaleData(localePath);
 
   function saveAllLocaleData(localePath) {
     const keyMap = Collector.getKeyMap();

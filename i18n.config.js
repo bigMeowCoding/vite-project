@@ -19,14 +19,7 @@ module.exports = {
       functionName: "$t",
       customizeKey: function getCustomizeKey(key, path) {
         key = key.replace(/\./g, "_").replace(/ /g, "").replace(/\[|\]/g, "_");
-        path =
-          path === null || path === void 0 ? void 0 : path.replace("./", "");
-        const [type, ...fullPathArr] = (path || "").slice(4, -4).split("/");
-        if (type === "views") {
-          const [moduleName] = fullPathArr;
-          return `${moduleName}.${key}`;
-        }
-        return `common.${key}`;
+        return `${key}`;
       },
       importDeclaration:
         "import i18n from '@locales/'\nconst $t = i18n.global.t",
@@ -126,14 +119,8 @@ module.exports = {
       functionNameInScript: "$t",
       customizeKey: function getCustomizeKey(key, path) {
         key = key.replace(/\./g, "_").replace(/ /g, "").replace(/\[|\]/g, "_");
-        path =
-          path === null || path === void 0 ? void 0 : path.replace("./", "");
-        const [type, ...fullPathArr] = (path || "").slice(4, -4).split("/");
-        if (type === "views") {
-          const [moduleName] = fullPathArr;
-          return `${moduleName}.${key}`;
-        }
-        return `common.${key}`;
+
+        return `${key}`;
       },
       tagOrder: ["template", "script", "scriptSetup", "style"],
     },

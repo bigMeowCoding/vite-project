@@ -1,60 +1,19 @@
-const fs = require("fs");
 const { parse } = require("@vue/compiler-sfc");
-const ejs = require("ejs");
-const htmlparser2 = require("htmlparser2");
-const { escapeSpecialChar } = require("../utils/escapeSpecialChar");
-const mustache = require("mustache");
-const { includeChinese } = require("../utils/includeChinese");
-const { getReplaceValue } = require("../utils/getReplaceValue");
-const COMMENT_TYPE = "!";
-const Collector = require("../utils/collector");
+const StateManager = require("../utils/store/stateManger");
 const { transformJs } = require("./transformJs");
 const { initParse } = require("../parser/initParse");
 const prettier = require("prettier");
+const mustache = require("mustache");
+const Collector = require("../utils/collector");
+const ejs = require("ejs");
+const htmlparser2 = require("htmlparser2");
+
+const { escapeSpecialChar } = require("../utils/escapeSpecialChar");
+const { includeChinese } = require("../utils/includeChinese");
+const { getReplaceValue } = require("../utils/getReplaceValue");
 const { customizeKey } = require("../config/enums");
-const { getOutputPath } = require("../utils/getOutputPath");
-function extractAndReplaceChineseInVue(filePath) {
-  let templateCode = "";
+const COMMENT_TYPE = "!";
 
-  try {
-    Collector.setCurrentCollectorPath(filePath);
-    Collector.resetCountOfAdditions();
-    const source = fs.readFileSync(filePath, "utf-8");
-    const { descriptor } = parse(source);
-
-    if (descriptor.template) {
-      templateCode = generationSource(descriptor.template, templateHandle);
-    }
-
-    console.log("templateCode", templateCode);
-
-    // // 处理 script 和 scriptSetup 部分
-    // if (descriptor.script) {
-    //   descriptor.script.content = replaceChineseInScript(
-    //     descriptor.script.content,
-    //   );
-    // }
-    // if (descriptor.scriptSetup) {
-    //   descriptor.scriptSetup.content = replaceChineseInScript(
-    //     descriptor.scriptSetup.content,
-    //   );
-    // }
-    //
-    // // 重新生成 Vue 文件内容
-    // const generated = generateVueFile(descriptor);
-    // fs.writeFileSync(filePath, generated, "utf-8");
-    // console.log(`文件 ${filePath} 已更新`);
-    // 只有文件提取过中文，或文件规则forceImport为true时，才重新写入文件
-    if (Collector.getCountOfAdditions() > 0) {
-      const outputPath = getOutputPath("", "", filePath);
-      fs.writeFileSync(outputPath, templateCode, "utf8");
-    }
-    Collector.resetCurrentFileKeyMap();
-  } catch (error) {
-    console.error(`处理文件 ${filePath} 时出错:`, error);
-    throw error;
-  }
-}
 function parseJsSyntax(source) {
   // html属性有可能是{xx:xx}这种对象形式，直接解析会报错，需要特殊处理。
   // 先处理成temp = {xx:xx} 让babel解析，解析完再还原成{xx:xx}
@@ -87,7 +46,7 @@ function parseJsSyntax(source) {
     ? stylizedCode.slice(0, stylizedCode.length - 1)
     : stylizedCode;
 }
-function parseTextNode(text) {
+function parseTextNode(text, rule, getReplaceValue, customizeKey) {
   let str = "";
   let tokens = [];
 
@@ -126,15 +85,22 @@ function parseTextNode(text) {
   return str;
 }
 
-function templateHandle(code) {
+function templateHandle(code, rule) {
   let htmlString = "";
   let attrsCache = {};
+  const { functionNameInTemplate, customizeKey } = rule;
+
   let textNodeCache = ""; // 缓存当前文本节点内容
   const parser = new htmlparser2.Parser(
     {
       onopentag(name) {
         console.log("opentag", name);
-        let text = parseTextNode(textNodeCache);
+        let text = parseTextNode(
+          textNodeCache,
+          rule,
+          getReplaceValue,
+          customizeKey
+        );
         // console.log("parseText", text);
 
         htmlString += text;
@@ -212,6 +178,12 @@ function getWrapperTemplate(sfc) {
   template += `><%- code %></${type}>`;
   return template;
 }
+function mergeCode(tagOrder, tagMap) {
+  const sourceCode = tagOrder.reduce((code, tagName) => {
+    return code + tagMap[tagName];
+  }, "");
+  return sourceCode;
+}
 
 function generationSource(sfc, handle) {
   const wrapperTemplate = getWrapperTemplate(sfc);
@@ -226,4 +198,61 @@ function generationSource(sfc, handle) {
   });
 }
 
-module.exports = { paseJsSyntax: parseJsSyntax, extractAndReplaceChineseInVue };
+function transformVue(code, options) {
+  const { rule, filePath } = options;
+  const { descriptor, errors } = parse(code);
+  if (errors.length > 0) {
+    const line = errors[0].loc.start.line;
+    console.error(
+      `源文件${filePath}第${line}行附近解析出现错误：`,
+      errors[0].toString()
+    );
+
+    return {
+      code,
+    };
+  }
+  const { template, script, scriptSetup } = descriptor;
+  let templateCode = "";
+  let scriptCode = "";
+  let scriptSetupCode = "";
+  let stylesCode = "";
+
+  if (template) {
+    templateCode = generationSource(template, templateHandle, rule);
+  }
+
+  if (script) {
+    // scriptCode = generationSource(script, handleScript, rule);
+  }
+
+  if (scriptSetup) {
+    // scriptSetupCode = generationSource(scriptSetup, handleScript, rule);
+  }
+
+  //   if (styles) {
+  //     for (const style of styles) {
+  //       const wrapperTemplate = getWrapperTemplate(style);
+  //       const source = style.content;
+  //       stylesCode +=
+  //         ejs.render(wrapperTemplate, {
+  //           code: source,
+  //         }) + "\n";
+  //     }
+  //   }
+  const tagMap = {
+    template: templateCode,
+    script: scriptCode,
+    scriptSetup: scriptSetupCode,
+    style: stylesCode,
+  };
+  const tagOrder = StateManager.getToolConfig().rules.vue.tagOrder;
+  code = mergeCode(tagOrder, tagMap);
+  return {
+    code,
+  };
+}
+
+module.exports = {
+  transformVue,
+};
