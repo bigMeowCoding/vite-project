@@ -136,7 +136,7 @@ module.exports = {
   },
   incremental: false,
   skipExtract: false,
-  localePath: "./locales/module",
+  localePath: "./example/assets",
   localeFileType: "json",
   translateJsonPath: "./locales/auto-translate",
   excelPath: "./locales/excel/locales.xlsx",

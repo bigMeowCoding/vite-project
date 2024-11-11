@@ -11,7 +11,6 @@ const htmlparser2 = require("htmlparser2");
 const { escapeSpecialChar } = require("../utils/escapeSpecialChar");
 const { includeChinese } = require("../utils/includeChinese");
 const { getReplaceValue } = require("../utils/getReplaceValue");
-const { customizeKey } = require("../config/enums");
 const COMMENT_TYPE = "!";
 
 function parseJsSyntax(source) {
@@ -127,7 +126,12 @@ function templateHandle(code, rule) {
       onclosetag(name, isImplied) {
         console.log("closetag=====", name, isImplied);
         // console.log("parseText", text);
-        let text = parseTextNode(textNodeCache);
+        let text = parseTextNode(
+          textNodeCache,
+          rule,
+          getReplaceValue,
+          customizeKey
+        );
         htmlString += text;
         textNodeCache = "";
 
@@ -185,11 +189,11 @@ function mergeCode(tagOrder, tagMap) {
   return sourceCode;
 }
 
-function generationSource(sfc, handle) {
+function generationSource(sfc, handle, rule) {
   const wrapperTemplate = getWrapperTemplate(sfc);
   let source;
   try {
-    source = handle(sfc.content);
+    source = handle(sfc.content, rule);
   } catch (error) {
     source = sfc.content;
   }
@@ -240,6 +244,7 @@ function transformVue(code, options) {
   //         }) + "\n";
   //     }
   //   }
+  console.log("templateCode", templateCode);
   const tagMap = {
     template: templateCode,
     script: scriptCode,
