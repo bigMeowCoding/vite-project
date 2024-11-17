@@ -1,5 +1,5 @@
 <template>
-<h1>中文</h1>
+  <h1>{{ `中文${count}` }}</h1>
 </template>
 <script setup>
 import { ref } from "vue";
