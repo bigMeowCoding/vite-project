@@ -1,5 +1,5 @@
 const path = require("path");
-// const slash = require("slash");
+// const sl÷ash = require("slash");
 
 function getAbsolutePath(...paths) {
   return (path.resolve(...paths));

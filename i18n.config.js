@@ -1,5 +1,5 @@
 module.exports = {
-  input: "src",
+  input: "example/utils",
   output: "",
 
   exclude: [
