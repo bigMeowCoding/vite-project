@@ -1,5 +1,5 @@
 module.exports = {
-  input: "example/utils",
+  input: "example/components",
   output: "",
 
   exclude: [
