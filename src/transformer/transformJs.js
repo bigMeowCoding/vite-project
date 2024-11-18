@@ -1,8 +1,8 @@
 const { default: babelGenerator } = require("@babel/generator");
 const { default: traverse } = require("@babel/traverse");
-const { includeChinese } = require("../utils/includeChinese");
-const Collector = require("../utils/collector");
-const { customizeKey } = require("../config/enums");
+const { includeChinese } = require("@/utils/includeChinese");
+const Collector = require("@/utils/collector");
+const { customizeKey } = require("@/config/enums");
 const { types: t } = require("@babel/core");
 const template = require("@babel/template");
 
@@ -32,6 +32,7 @@ function transformJs(source, option) {
     function getTraverseOption() {
       return {
         StringLiteral(path) {
+          console.log("StringLiteral", path.node);
           const value = path.node.extra
             ? path.node.extra.raw.slice(1, -1)
             : path.node.value;
@@ -42,7 +43,27 @@ function transformJs(source, option) {
           }
           path.skip();
         },
-        TemplateLiteral(path) {},
+        ExpressionStatement(path) {
+          console.log("ExpressionStatement", path.node);
+        },
+        TemplateLiteral(path) {
+          console.log("TemplateLiteral", path.node);
+        },
+        CallExpression(path) {
+          console.log("CallExpression", path.node);
+        },
+        ArrowFunctionExpression(path) {
+          console.log("ArrowFunctionExpression", path.node);
+        },
+        FunctionDeclaration(path) {
+          console.log("FunctionDeclaration", path.node);
+        },
+        ObjectProperty(path) {
+          console.log("ObjectProperty", path.node);
+        },
+        ObjectExpression(path) {
+          console.log("ObjectExpression", path.node);
+        },
       };
     }
     const ast = option.parse(source);

@@ -8,12 +8,12 @@ const Collector = require("../utils/collector");
 const ejs = require("ejs");
 const htmlparser2 = require("htmlparser2");
 
-const { escapeSpecialChar } = require("../utils/escapeSpecialChar");
+const { escapeSpecialChar } = require("@/utils/escapeSpecialChar");
 const { includeChinese } = require("../utils/includeChinese");
 const { getReplaceValue } = require("../utils/getReplaceValue");
 const COMMENT_TYPE = "!";
 
-function parseJsSyntax(source) {
+function parseJsSyntax(source, rule) {
   // html属性有可能是{xx:xx}这种对象形式，直接解析会报错，需要特殊处理。
   // 先处理成temp = {xx:xx} 让babel解析，解析完再还原成{xx:xx}
   let isObjectStruct = false;
@@ -25,6 +25,12 @@ function parseJsSyntax(source) {
 
   const { code } = transformJs(source, {
     parse: initParse(),
+    rule: {
+      ...rule,
+      functionName: rule.functionNameInTemplate,
+      caller: "",
+      importDeclaration: "",
+    },
   });
   let stylizedCode = prettier.format(code, {
     singleQuote: true,
@@ -64,11 +70,11 @@ function parseTextNode(text, rule, getReplaceValue, customizeKey) {
         const translationKey = Collector.add(value, customizeKey);
         str += `{{${getReplaceValue(translationKey)}}}`;
       } else if (type === "name") {
-        const source = parseJsSyntax(value);
+        const source = parseJsSyntax(value, rule);
 
         str += `{{${source}}`;
       } else if (type === COMMENT_TYPE) {
-        const source = parseJsSyntax(`!${value}`);
+        const source = parseJsSyntax(`!${value}`, rule);
         str += `{{${source}}}`;
       }
     } else {
@@ -83,7 +89,13 @@ function parseTextNode(text, rule, getReplaceValue, customizeKey) {
   }
   return str;
 }
-
+function parseTagAttrs(attrsCache) {
+  let attrs = "";
+  for (const attr in attrsCache) {
+    attrs += `${attr}="${attrsCache[attr]}" `;
+  }
+  return attrs;
+}
 function templateHandle(code, rule) {
   let htmlString = "";
   let attrsCache = {};
@@ -101,10 +113,11 @@ function templateHandle(code, rule) {
           customizeKey
         );
         // console.log("parseText", text);
-
+        let attrs = "";
+        attrs = parseTagAttrs(attrsCache);
         htmlString += text;
         textNodeCache = "";
-        htmlString += `<${name} >`;
+        htmlString += `<${name} ${attrs}>`;
       },
       onattribute(name, value, quote) {
         console.log("onatrribute", name, value);

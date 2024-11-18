@@ -1,5 +1,6 @@
 const { isValidInput } = require("./isValidInput");
 const glob = require("glob");
+
 const { getOnlyAddIncludes } = require("./getOnlyAddIncludes");
 function getSourceFilePaths(input, exclude, includes) {
   if (isValidInput(input)) {
