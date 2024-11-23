@@ -2,6 +2,9 @@
   "name": "vite-project",
   "private": true,
   "version": "0.0.0",
+  "_moduleAliases": {
+    "@": "src"
+  },
   "scripts": {
     "dev": "vite",
     "build": " vite build",
@@ -17,6 +20,7 @@
     "glob": "^11.0.0",
     "htmlparser2": "^9.1.0",
     "lodash": "^4.17.21",
+    "module-alias": "^2.2.3",
     "mustache": "^4.2.0",
     "pinia": "2.0.14",
     "rollup-plugin-i18n-auto": "^0.1.2",
