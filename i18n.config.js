@@ -1,18 +1,9 @@
 module.exports = {
-  input: "example/components",
+  input: "example/utils",
+  // input: "example/components",
   output: "",
 
-  exclude: [
-    "**/node_modules/**/*",
-    "**/src/views/iot/**/*",
-    "**/src/views/join/**/*",
-    "**/src/views/iot-operation/**/*",
-    "**/src/views/finance/**/*",
-    "**/src/views/finance/**/*",
-    "**/src/warehouseManage/**/*",
-    "**/src/views/productMiddlePlatform/**/*",
-    "**/views/store-data/**/flow/config/*.js",
-  ],
+  exclude: ["**/node_modules/**/*"],
   rules: {
     js: {
       caller: "",
