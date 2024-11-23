@@ -105,7 +105,7 @@ function transformJs(source, option) {
               if (node.type === "Identifier") {
                 value += `{${node.name}}`;
                 param[node.name] = node.name;
-              } else if (node.type === "TemplateLiteral") {
+              } else if (node.type === "TemplateElement") {
                 value += node.value.raw.replace(/[\r\n]/g, "");
               } else if (node.type === "MemberExpression") {
                 const key = `slot${slotIndex++}`;
@@ -138,7 +138,9 @@ function transformJs(source, option) {
           const code = nodeToCode(node);
           const callee = node.callee;
           const globalRule = stateManger.getToolConfig().globalRule;
-          globalRule.forEach((ignoreRule) => {
+          console.log("globalRule", globalRule);
+
+          globalRule.ignoreMethods.forEach((ignoreRule) => {
             if (code.startsWith(ignoreRule)) {
               path.skip();
             }
