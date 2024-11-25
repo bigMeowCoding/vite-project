@@ -7,6 +7,7 @@ const mustache = require("mustache");
 const Collector = require("../utils/collector");
 const ejs = require("ejs");
 const htmlparser2 = require("htmlparser2");
+const traverse = require("@babel/traverse").default;
 
 const { escapeSpecialChar } = require("@/utils/escapeSpecialChar");
 const { includeChinese } = require("../utils/includeChinese");
@@ -170,7 +171,70 @@ function templateHandle(code, rule) {
   parser.end();
   return htmlString;
 }
+// TODO 后边搞懂
+function findExportDefaultDeclaration(source, parser) {
+  let startIndex = -1;
+  const ast = parser(source);
+  traverse(ast, {
+    ExportDefaultDeclaration(path) {
+      const { node } = path;
+      const declaration = path.get("declaration");
+      if (declaration.isClassDeclaration()) {
+        const decorators = declaration.node.decorators;
+        if (decorators && decorators.length > 0) {
+          // 找出@Component装饰器进行分割
+          const componentDecorator = decorators.find((decorator) => {
+            return (
+              (decorator.expression.type === "Identifier" &&
+                decorator.expression.name === "Component") ||
+              (decorator.expression.type === "CallExpression" &&
+                decorator.expression.callee.type === "Identifier" &&
+                decorator.expression.callee.name === "Component")
+            );
+          });
+          if (componentDecorator) {
+            startIndex = node.start ?? 0;
+            path.skip();
+          }
+        }
+      }
+    },
+  });
+  return startIndex;
+}
 
+function scriptHandle(source, rule) {
+  const parser = initParse([]);
+  const startIndex = findExportDefaultDeclaration(source, parser);
+  const transformOptions = {
+    rule: {
+      ...rule,
+      functionName: rule.functionNameInScript,
+    },
+    isJsInVue: true, // 标记处理vue里的js
+    parse: initParse([]),
+  };
+
+  if (startIndex !== -1) {
+    // 含ts的vue处理
+    //把vue的script拆分成 export default 部分和非export default部分分别解析
+    const notDefaultPart = source.slice(0, startIndex);
+    const defaultPart = source.slice(startIndex);
+    const defaultCode = transformJs(defaultPart, transformOptions).code;
+    const notDefaultCode = transformJs(notDefaultPart, {
+      ...transformOptions,
+      rule: StateManager.getToolConfig().rules.js,
+    }).code;
+    if (notDefaultCode) {
+      return "\n" + notDefaultCode + "\n" + defaultCode + "\n";
+    } else {
+      return defaultCode + "\n";
+    }
+  } else {
+    const code = transformJs(source, transformOptions).code;
+    return code;
+  }
+}
 function getWrapperTemplate(sfc) {
   const { type, lang, attrs } = sfc;
   let template = `<${type}`;
@@ -229,7 +293,7 @@ function transformVue(code, options) {
       code,
     };
   }
-  const { template, script, scriptSetup } = descriptor;
+  const { template, script, scriptSetup, styles } = descriptor;
   let templateCode = "";
   let scriptCode = "";
   let scriptSetupCode = "";
@@ -240,23 +304,23 @@ function transformVue(code, options) {
   }
 
   if (script) {
-    // scriptCode = generationSource(script, handleScript, rule);
+    scriptCode = generationSource(script, scriptHandle, rule);
   }
 
   if (scriptSetup) {
-    // scriptSetupCode = generationSource(scriptSetup, handleScript, rule);
+    scriptSetupCode = generationSource(scriptSetup, scriptHandle, rule);
   }
 
-  //   if (styles) {
-  //     for (const style of styles) {
-  //       const wrapperTemplate = getWrapperTemplate(style);
-  //       const source = style.content;
-  //       stylesCode +=
-  //         ejs.render(wrapperTemplate, {
-  //           code: source,
-  //         }) + "\n";
-  //     }
-  //   }
+  if (styles) {
+    for (const style of styles) {
+      const wrapperTemplate = getWrapperTemplate(style);
+      const source = style.content;
+      stylesCode +=
+        ejs.render(wrapperTemplate, {
+          code: source,
+        }) + "\n";
+    }
+  }
   console.log("templateCode", templateCode);
   const tagMap = {
     template: templateCode,
