@@ -73,7 +73,7 @@ function parseTextNode(text, rule, getReplaceValue, customizeKey) {
       } else if (type === "name") {
         const source = parseJsSyntax(value, rule);
 
-        str += `{{${source}}`;
+        str += `{{${source}}}`;
       } else if (type === COMMENT_TYPE) {
         const source = parseJsSyntax(`!${value}`, rule);
         str += `{{${source}}}`;
@@ -82,7 +82,7 @@ function parseTextNode(text, rule, getReplaceValue, customizeKey) {
       if (type === "text") {
         str += value;
       } else if (type === "name") {
-        str += `{{${value}}`;
+        str += `{{${value}}}`;
       } else if (type === COMMENT_TYPE) {
         str += `{{!${value}}}`;
       }
