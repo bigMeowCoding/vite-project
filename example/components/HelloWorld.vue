@@ -1,5 +1,6 @@
 <template>
   <h1>{{ `中文${count}` }}</h1>
+  <p>{{ msg }}</p>
 </template>
 <script setup>
 import { ref } from "vue";
