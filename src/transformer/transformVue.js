@@ -90,18 +90,62 @@ function parseTextNode(text, rule, getReplaceValue, customizeKey) {
   }
   return str;
 }
-function parseTagAttrs(attrsCache) {
-  let attrs = "";
-  for (const attr in attrsCache) {
-    attrs += `${attr}="${attrsCache[attr]}" `;
+// 判断表达式是否已经转换成i18n
+function hasTransformed(code, functionNameInTemplate) {
+  return new RegExp(`\\${functionNameInTemplate}\\(.*\\)`, "g").test(code);
+}
+
+function removeQuotes(value) {
+  if (
+    ['"', "'"].includes(value.charAt(0)) &&
+    ['"', "'"].includes(value.charAt(value.length - 1))
+  ) {
+    value = value.substring(1, value.length - 1);
   }
-  return attrs;
+
+  return value;
 }
 function templateHandle(code, rule) {
   let htmlString = "";
   let attrsCache = {};
   const { functionNameInTemplate, customizeKey } = rule;
+  function parseTagAttrs(attrsCache) {
+    let attrs = "";
+    for (const attr in attrsCache) {
+      let attrValue = attrsCache[attr];
+      let isVueDirective =
+        attr.startsWith(":") || attr.startsWith("@") || attr.startsWith("v-");
+      if (attrValue === undefined) {
+        attrs += `${attr}`;
+      } else if (includeChinese(attrValue) && isVueDirective) {
+        const source = parseJsSyntax(attrValue, rule);
+        if (
+          source === attrValue &&
+          !hasTransformed(source, functionNameInTemplate ?? "")
+        ) {
+          let translationKey = Collector.add(
+            removeQuotes(attrValue),
+            customizeKey
+          );
+          attrs += ` ${attr}=${getReplaceValue(translationKey)} `;
+        } else {
+          attrs += ` ${attr}="${source}" `;
+        }
+      } else if (includeChinese(attrValue) && !isVueDirective) {
+        let translationKey = Collector.add(attrValue, (key, path) => {
+          key = key.replace(/'/g, "`").replace(/"/g, "'");
+          return customizeKey(key, path);
+        });
 
+        attrs += ` :${attr}=${getReplaceValue(translationKey)} `;
+      } else if (attrValue === "") {
+        attrs += `${attr}='' `;
+      } else {
+        attrs += `${attr}="${attrValue}" `;
+      }
+    }
+    return attrs;
+  }
   let textNodeCache = ""; // 缓存当前文本节点内容
   const parser = new htmlparser2.Parser(
     {
