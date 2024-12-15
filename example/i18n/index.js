@@ -1,6 +1,5 @@
 import { createI18n } from "vue-i18n";
-import zh from "../assets/zh.json";
-import en from "../assets/en.json";
+import zh from "../assets/zh-cn.json";
 
 const localeLang = "zh";
 const i18n = createI18n({
@@ -8,7 +7,6 @@ const i18n = createI18n({
   locale: localeLang,
   messages: {
     zh,
-    en,
   },
 });
 
