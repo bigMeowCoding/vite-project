@@ -127,7 +127,7 @@ function templateHandle(code, rule) {
             removeQuotes(attrValue),
             customizeKey
           );
-          attrs += ` ${attr}=${getReplaceValue(translationKey)} `;
+          attrs += ` ${attr}="${getReplaceValue(translationKey)}" `;
         } else {
           attrs += ` ${attr}="${source}" `;
         }
@@ -137,7 +137,7 @@ function templateHandle(code, rule) {
           return customizeKey(key, path);
         });
 
-        attrs += ` :${attr}=${getReplaceValue(translationKey)} `;
+        attrs += ` :${attr}="${getReplaceValue(translationKey)}" `;
       } else if (attrValue === "") {
         attrs += `${attr}='' `;
       } else {
