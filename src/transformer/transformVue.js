@@ -122,8 +122,7 @@ function templateHandle(code, rule) {
         if (
           source === attrValue &&
           !hasTransformed(source, functionNameInTemplate ?? "")
-        ) {
-          let translationKey = Collector.add(
+        ) {   let translationKey = Collector.add(
             removeQuotes(attrValue),
             customizeKey
           );

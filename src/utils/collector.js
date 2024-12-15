@@ -27,7 +27,7 @@ class Collector {
     let formatedText = removeLineBreaksInTag(text);
     const translationKey = customeKeyFn(
       escapeQuotes(formatedText),
-      this.currentFilePath,
+      this.currentFilePath
     );
     this.keyMap[translationKey] = formatedText.replace("|", "{'|'}");
     this.countOfAdditions++;

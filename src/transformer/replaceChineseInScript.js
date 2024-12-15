@@ -16,7 +16,7 @@ function replaceChineseInScript(scriptContent) {
       if (/[\u4e00-\u9fff]/.test(value)) {
         const key = getOrCreateKey(value);
         path.replaceWith(
-          t.callExpression(t.identifier("t"), [t.stringLiteral(key)]),
+          t.callExpression(t.identifier("t"), [t.stringLiteral(key)])
         );
       }
     },
@@ -34,7 +34,7 @@ function replaceChineseInScript(scriptContent) {
           if (/[\u4e00-\u9fff]/.test(part)) {
             const key = getOrCreateKey(part);
             newExpressions.push(
-              t.callExpression(t.identifier("t"), [t.stringLiteral(key)]),
+              t.callExpression(t.identifier("t"), [t.stringLiteral(key)])
             );
             newQuasis.push(t.templateElement({ raw: "", cooked: "" }));
             newQuasiValue = "";
@@ -46,8 +46,8 @@ function replaceChineseInScript(scriptContent) {
         newQuasis.push(
           t.templateElement(
             { raw: newQuasiValue, cooked: newQuasiValue },
-            index === quasis.length - 1,
-          ),
+            index === quasis.length - 1
+          )
         );
 
         if (index < expressions.length) {

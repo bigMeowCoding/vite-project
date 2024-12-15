@@ -40,7 +40,9 @@ function generateDirectives(props) {
         return `@${arg.content}="${exp ? exp.loc.source : ""}"`;
       }
       if (name === "model") {
-        return `v-model${arg ? `:${arg.content}` : ""}="${exp ? exp.loc.source : ""}"`;
+        return `v-model${arg ? `:${arg.content}` : ""}="${
+          exp ? exp.loc.source : ""
+        }"`;
       }
       if (name === "bind") {
         // 保留原始的绑定表达式，并处理可能的 JSON 字符串
@@ -52,7 +54,7 @@ function generateDirectives(props) {
           expContent = Object.entries(jsonObj)
             .map(
               ([key, value]) =>
-                `${key}:${JSON.stringify(value).replace(/"/g, "'")}`,
+                `${key}:${JSON.stringify(value).replace(/"/g, "'")}`
             )
             .join(",");
           // 用花括号包裹，形成有效的对象字面量
@@ -64,7 +66,9 @@ function generateDirectives(props) {
         return `:${arg.content}="${expContent}"`;
       }
       // 对于其他指令，保留原始表达式
-      return `v-${name}${arg ? `:${arg.content}` : ""}="${exp ? exp.content : ""}"`;
+      return `v-${name}${arg ? `:${arg.content}` : ""}="${
+        exp ? exp.content : ""
+      }"`;
     })
     .join(" ");
 }
@@ -102,7 +106,9 @@ function generateElementNode(node) {
   const attrs = generateAttributes(node.props);
   const directives = generateDirectives(node.props);
   const children = node.children.map(generateTemplateFromAst).join("");
-  return `<${node.tag}${attrs ? " " + attrs : ""}${directives ? " " + directives : ""}>${children}</${node.tag}>`;
+  return `<${node.tag}${attrs ? " " + attrs : ""}${
+    directives ? " " + directives : ""
+  }>${children}</${node.tag}>`;
 }
 
 module.exports = { generateTemplateFromAst };

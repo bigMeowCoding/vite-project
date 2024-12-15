@@ -1,7 +1,6 @@
 const { getAbsolutePath } = require("../getAbsolutePath");
 const fs = require("fs");
 
-
 function getUserConfig(options = {}) {
   const configFile = options.configFile || "";
   if (configFile) {

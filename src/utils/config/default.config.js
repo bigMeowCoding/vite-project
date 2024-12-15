@@ -1,4 +1,3 @@
-
 // 参数path，在生成配置文件时需要展示在文件里，所以这里去掉eslint校验
 function getCustomizeKey(key, path) {
   key = key.replace(/\./g, "_").replace(/ /g, "").replace(/\[|\]/g, "_");
@@ -18,7 +17,7 @@ function getCommonRule() {
     caller: "",
     functionName: "$t",
     customizeKey: getCustomizeKey,
-    importDeclaration: importCode
+    importDeclaration: importCode,
   };
 }
 
@@ -35,11 +34,11 @@ const config = {
     mjs: getCommonRule(),
     jsx: {
       ...getCommonRule(),
-      functionSnippets: ""
+      functionSnippets: "",
     },
     tsx: {
       ...getCommonRule(),
-      functionSnippets: ""
+      functionSnippets: "",
     },
     vue: {
       caller: "",
@@ -47,12 +46,12 @@ const config = {
       functionNameInTemplate: "$t", // vue这里的配置，仅针对vue的template标签里面的内容生效
       functionNameInScript: "$t", // vue这里的配置，仅针对vue的script部分export default里面的内容生效
       customizeKey: getCustomizeKey,
-      tagOrder: ["template", "scriptSetup", "script", "style"]
-    }
+      tagOrder: ["template", "scriptSetup", "script", "style"],
+    },
   },
   prettier: {
     semi: false,
-    singleQuote: true
+    singleQuote: true,
   },
   incremental: false,
   localePath: "./locales/module",
@@ -62,13 +61,13 @@ const config = {
   transferPath: "./locales/translate",
   locales: ["en", "zh-tw"],
   globalRule: {
-    ignoreMethods: ["defineProps"]
+    ignoreMethods: ["defineProps"],
   },
-  sortData: ['key', 'local', 'zh'],
+  sortData: ["key", "local", "zh"],
   // 参数currentFileKeyMap和currentFilePath，在生成配置文件时需要展示在文件里，所以这里去掉eslint校验
   adjustKeyMap(allKeyValue) {
     return allKeyValue;
-  }
+  },
 };
 
 module.exports = config;

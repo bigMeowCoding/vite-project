@@ -1,6 +1,6 @@
 function getReplaceValue(translationKey) {
   // 表达式结构 $t('xx')
-  return `t('${translationKey}')`;
+  return `$t('${translationKey}')`;
 }
 
 module.exports = {

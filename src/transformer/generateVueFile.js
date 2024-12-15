@@ -6,7 +6,9 @@ function generateVueFile(descriptor) {
     const templateAttrs = Object.entries(descriptor.template.attrs || {})
       .map(([key, value]) => `${key}${value === true ? "" : `="${value}"`}`)
       .join(" ");
-    content += `<template${templateAttrs ? " " + templateAttrs : ""}>\n${descriptor.template.content}\n</template>\n\n`;
+    content += `<template${templateAttrs ? " " + templateAttrs : ""}>\n${
+      descriptor.template.content
+    }\n</template>\n\n`;
   }
 
   // 处理 script 部分
@@ -19,7 +21,9 @@ function generateVueFile(descriptor) {
         return `${key}${value === true ? "" : `="${value}"`}`;
       })
       .join(" ");
-    content += `<script${scriptAttrs ? " " + scriptAttrs : ""}>\n${descriptor.script.content}\n</script>\n\n`;
+    content += `<script${scriptAttrs ? " " + scriptAttrs : ""}>\n${
+      descriptor.script.content
+    }\n</script>\n\n`;
   }
 
   // 处理 script setup 部分（如果存在）
@@ -33,7 +37,9 @@ function generateVueFile(descriptor) {
       })
       .filter(Boolean)
       .join(" ");
-    content += `<script setup${scriptSetupAttrs ? " " + scriptSetupAttrs : ""}>\n${descriptor.scriptSetup.content}\n</script>\n\n`;
+    content += `<script setup${
+      scriptSetupAttrs ? " " + scriptSetupAttrs : ""
+    }>\n${descriptor.scriptSetup.content}\n</script>\n\n`;
   }
 
   // 处理 style 部分
@@ -42,7 +48,9 @@ function generateVueFile(descriptor) {
       const styleAttrs = Object.entries(style.attrs || {})
         .map(([key, value]) => `${key}${value === true ? "" : `="${value}"`}`)
         .join(" ");
-      content += `<style${styleAttrs ? " " + styleAttrs : ""}>\n${style.content}\n</style>\n\n`;
+      content += `<style${styleAttrs ? " " + styleAttrs : ""}>\n${
+        style.content
+      }\n</style>\n\n`;
     });
   }
 

@@ -11,10 +11,13 @@ function nodeToCode(node) {
   return babelGenerator(node).code;
 }
 function transformJs(source, option) {
+  const { rule } = option;
+  const { caller, functionName, customizeKey, forceImport, importDeclaration } =
+    rule;
+  let hasTransformed = false;
+  let hasImportI18n = false;
+
   function transformAST(source, option) {
-    let hasTransformed = false;
-    const { rule } = option;
-    const { caller, functionName, customizeKey } = rule;
     function getStringLiteral(value) {
       return Object.assign(t.stringLiteral(value), {
         extra: {
@@ -87,6 +90,23 @@ function transformJs(source, option) {
         },
         ExpressionStatement(path) {
           console.log("ExpressionStatement", path.node);
+        },
+        ImportDeclaration(path) {
+          const res = importDeclaration.match(/from ["'](.*)["']/);
+          const packageName = res ? res[1] : "";
+
+          if (path.node.source.value === packageName) {
+            hasImportI18n = true;
+          }
+
+          if (!hasImportI18n && hasTransformed) {
+            const importAst = template.statements(importDeclaration)();
+            const program = path.parent;
+            importAst.forEach((statement) => {
+              program.body.unshift(statement);
+            });
+            hasImportI18n = true;
+          }
         },
         TemplateLiteral(path) {
           const node = path.node;
@@ -203,12 +223,21 @@ function transformJs(source, option) {
     traverse(ast, getTraverseOption());
     return ast;
   }
+
   const ast = transformAST(source, option);
   const result = babelGenerator(ast, {
     compact: false,
     retainLines: true, // 保持原始行号
     semicolons: false,
   });
+  // 文件里没有出现任何导入语句的情况
+  if (!hasImportI18n && hasTransformed) {
+    result.code = `${importDeclaration}\n${result.code}`;
+  }
+  // 有forceImport时，即使没发生中文提取，也要在文件里加入i18n导入语句
+  if (!hasImportI18n && !hasTransformed && forceImport) {
+    result.code = `${importDeclaration}\n${result.code}`;
+  }
   return result;
 }
 

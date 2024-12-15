@@ -12,7 +12,7 @@ describe("paseJsSyntax Function Tests", () => {
   // 测试对象字面量输入
   test("should correctly parse object structure input", () => {
     const input = `{ key: 'value' };`;
-    const expectedOutput =`{ key: 'value' }`;
+    const expectedOutput = `{ key: 'value' }`;
     const output = paseJsSyntax(input);
     expect(output).equal(expectedOutput);
   });
