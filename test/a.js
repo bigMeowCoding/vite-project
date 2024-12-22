@@ -1,3 +1,6 @@
+/**
+ * 检查变量是否已声明
+ */
 const babel = require("@babel/core");
 const { default: traverse } = require("@babel/traverse");
 
