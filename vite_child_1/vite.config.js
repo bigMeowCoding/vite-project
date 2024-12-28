@@ -2,13 +2,14 @@
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
-import topLevelAwait from "vite-plugin-top-level-await";
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import i18nAuto from "./i18n-plugin/index.js";
 import path from "node:path";
 import { federation } from "@module-federation/vite";
+import topLevelAwait from "vite-plugin-top-level-await";
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const plugins = [vue(), AutoImport({}), Components({})];
@@ -40,32 +41,28 @@ export default defineConfig(({ command }) => {
   }
   plugins.push(
     i18nAuto(i18nAutoConf),
+
     federation({
-      name: "vite_project",
- 
-      remotes: {
-        vite_child_1: {
-          type: "module",
-          name: "vite_child_1",
-          entry: "http://localhost:3001/remoteEntry.js?vite_child_1",
-          entryGlobalName: "remote",
-          shareScope: "default",
-        },
-        // vite_child_2: {
-        //   type: "module",
-        //   name: "vite_child_2",
-        //   entry: "http://localhost:3002/remoteEntry-[hash].js",
-        // },
-      },
+      name: "vite_child_1",
+      filename: "remoteEntry.js",
       manifest: true,
 
-      filename: "remoteEntry.js",
+      exposes: {
+        ".": "./src/App.vue",
+        "./Home": "./src/components/Home.vue",
+        "./components/Home": "./src/components/Home.vue",
+      },
+
       // shared: ["vue", "element-plus"],
     }),
     false && topLevelAwait()
   );
   return {
+    base: "http://localhost:3001",
     plugins,
+    server: {
+      port: 3001,
+    },
     build: {
       minify: false, // 禁用代码压缩
       target: "chrome89",

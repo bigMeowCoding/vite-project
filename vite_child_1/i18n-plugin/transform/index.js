@@ -118,7 +118,7 @@ export default function i18nTransform({ id, code }, options) {
   const visitor = {
     // Finds if the user's dependency is in the import declaration
     ImportDeclaration(path) {
-      // console.log("importDeclaration", path.node.source.value);
+      console.log("importDeclaration", path.node.source.value);
       if (!transform || !dependency || loadedDependency) {
         return;
       }
@@ -177,7 +177,7 @@ export default function i18nTransform({ id, code }, options) {
       valueMatched && nameMatched && (loadedDependency = true);
     },
     CallExpression(path) {
-      // console.log("CallExpression");
+      console.log("CallExpression");
 
       let wholeCallName = "";
       const recurName = (node) => {
@@ -212,7 +212,7 @@ export default function i18nTransform({ id, code }, options) {
       });
     },
     StringLiteral(path) {
-      // console.log("StringLiteral");
+      console.log("StringLiteral");
       if (path.parent.type === "ImportDeclaration") {
         return;
       }
@@ -226,7 +226,7 @@ export default function i18nTransform({ id, code }, options) {
 
       if (path.node.type === "StringLiteral") {
         const val = path.node.value;
-        // console.log("pathvalue==", val);
+        console.log("pathvalue==", val);
         if (localePattern.test(val)) {
           if (matchVueFileSpecialRule(path)) {
             return;
@@ -251,7 +251,7 @@ export default function i18nTransform({ id, code }, options) {
       }
     },
     TemplateLiteral(path) {
-      // console.log("TemplateLiteral");
+      console.log("TemplateLiteral");
       if (findCommentExclude(path)) {
         return;
       }
@@ -306,7 +306,7 @@ export default function i18nTransform({ id, code }, options) {
   }
 
   const newCode = generator.default(ast, {}, code).code;
-  // console.log(id, collection, keyInCodes, "complieResourceMap");
+  console.log(id, collection, keyInCodes, "complieResourceMap");
   setCurrentCompileResourceMap(id, collection, keyInCodes); // create the latest collection to this file in sourcemap variable
 
   return newCode;

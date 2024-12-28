@@ -5,7 +5,7 @@ import collectInit from "./common/collect.js";
 
 export default function i18nAuto(options = {}) {
   const { setting } = collectInit(options);
-  // console.log("setting", setting);
+  console.log("setting", setting);
   const isBuildMode = setting.mode === "build";
   return {
     name: "i18n-auto",

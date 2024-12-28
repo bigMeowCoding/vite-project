@@ -11,7 +11,7 @@ let writeTaskStash = []
 
 function generate ({path: dir, filename}) {
     const localeWordConfig = createConfigbyMap()
-    // console.log(localeWordConfig,'localeWordConfig')
+    console.log(localeWordConfig,'localeWordConfig')
     let content = {}
     for (const key in localeWordConfig) {
         if (Object.prototype.hasOwnProperty.call(localeWordConfig, key)) {

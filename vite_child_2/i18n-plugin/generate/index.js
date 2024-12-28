@@ -8,7 +8,7 @@ import createLocaleWordConfig from "./wordConfig.js";
  */
 const handleTranslate = async (translation) => {
   const localeConfigOrigin = createConfigbyMap();
-  // console.log(localeConfigOrigin, "dddddd");
+  console.log(localeConfigOrigin, "dddddd");
 
   const localeConfig = {};
   for (const key in localeConfigOrigin) {
@@ -24,7 +24,7 @@ const handleTranslate = async (translation) => {
 export default function (setting) {
   const { output, translate, mode, sourceMap } = setting;
   const { configNeedUpdate, sourceMapNeedUpdate } = updateResourceMap();
-  // console.log(mode === "build" && translate.on, "translate");
+  console.log(mode === "build" && translate.on, "translate");
   if (mode === "build" && translate.on) {
     handleTranslate(translate);
   }

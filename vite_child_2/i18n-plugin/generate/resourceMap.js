@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { createConfigbyMap, updateConfig } from '../common/collect.js';
+import { getResource } from '../common/collect.js';
 
 let dirCreated = false
 let mkdiring = false
@@ -10,16 +10,8 @@ let wirteTaskTimer = null
 let writeTaskStash = []
 
 function generate ({path: dir, filename}) {
-    const localeWordConfig = createConfigbyMap()
-    // console.log(localeWordConfig,'localeWordConfig')
-    let content = {}
-    for (const key in localeWordConfig) {
-        if (Object.prototype.hasOwnProperty.call(localeWordConfig, key)) {
-            content[key] = localeWordConfig[key].value || ''
-        }
-    }
-    updateConfig(content)
-    content = JSON.stringify(content)
+    let mapSource = getResource()
+    mapSource = JSON.stringify(mapSource)
 
     // 把正在写配置的操作中断了，使用最新的写操作
     writeTaskStash.forEach(ctrl => {
@@ -29,7 +21,7 @@ function generate ({path: dir, filename}) {
     const controller = new AbortController()
     const { signal } = controller
     writeTaskStash.push(controller)
-    writeFile(path.resolve(dir, filename), content, { signal })
+    writeFile(path.resolve(dir, filename), mapSource, { signal })
 }
 
 // 防抖
@@ -57,10 +49,10 @@ export default async function (output) {
             // 创建文件夹过程中有需要创建本地配置文件的情况，在创建时被中断了，所以在创建结束后再执行一次
             hasDirAfterWriteTask && debounceWrite(output)
         } catch (err) {
-            console.error('🚀 ~ file: wordConfig.js:59 ~ err:', err)
+            console.error('🚀 ~ file: resourceMap.js:53 ~ err:', err)
         }
         mkdiring = false
     }
-
+    
     debounceWrite(output)
 }
