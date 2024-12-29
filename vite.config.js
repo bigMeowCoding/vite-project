@@ -2,7 +2,7 @@
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
-
+import path from "path";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
@@ -20,6 +20,11 @@ export default defineConfig(({ command }) => {
 
   return {
     plugins,
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "src"),
+      },
+    },
     build: {
       minify: false, // 禁用代码压缩
       target: "esnext", // 保持 ES6 语法
