@@ -42,15 +42,25 @@ export default defineConfig(({ command }) => {
     i18nAuto(i18nAutoConf),
     federation({
       name: "vite_project",
- 
+      shareStrategy: "loaded-first",
+      filename: "remoteEntry.js",
+
       remotes: {
+        // vite_child_1: {
+        //   type: "module",
+        //   name: "vite_child_1",
+        //   entry: "http://localhost:3001/remoteEntry.js?vite_child_1",
+        //   entryGlobalName: "remote",
+        //   shareScope: "default",
+        // },
         vite_child_1: {
           type: "module",
           name: "vite_child_1",
-          entry: "http://localhost:3001/remoteEntry.js?vite_child_1",
-          entryGlobalName: "remote",
-          shareScope: "default",
+          entry: "http://localhost:3001/remoteEntry.js",
+          // entryGlobalName: "remote",
+          // shareScope: "default",
         },
+
         // vite_child_2: {
         //   type: "module",
         //   name: "vite_child_2",
@@ -59,13 +69,15 @@ export default defineConfig(({ command }) => {
       },
       manifest: true,
 
-      filename: "remoteEntry.js",
       // shared: ["vue", "element-plus"],
     }),
     false && topLevelAwait()
   );
   return {
     plugins,
+    server: {
+      hmr: { overlay: false },
+    },
     build: {
       minify: false, // 禁用代码压缩
       target: "chrome89",

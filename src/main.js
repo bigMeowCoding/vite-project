@@ -7,6 +7,8 @@ import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import Avue from "@smallwei/avue";
 import { createRouter, createWebHistory } from "vue-router";
+// import Home from "vite_child_1/Home";
+// import About from "vite_child_1";
 import Home from "./components/Home.vue";
 import About from "./components/About.vue";
 const routes = [

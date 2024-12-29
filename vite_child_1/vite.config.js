@@ -44,13 +44,17 @@ export default defineConfig(({ command }) => {
 
     federation({
       name: "vite_child_1",
+      // filename: "remoteEntry.js",
       filename: "remoteEntry.js",
-      manifest: true,
 
+      manifest: {
+        fileName: "mf-manifest-main.json",
+      },
       exposes: {
-        ".": "./src/App.vue",
-        "./Home": "./src/components/Home.vue",
-        "./components/Home": "./src/components/Home.vue",
+        "./test": "./src/components/test",
+        // ".": "./src/App.vue",
+        // "./Home": "./src/components/Home.vue",
+        // "./components/Home": "./src/components/Home.vue",
       },
 
       // shared: ["vue", "element-plus"],
@@ -61,6 +65,8 @@ export default defineConfig(({ command }) => {
     base: "http://localhost:3001",
     plugins,
     server: {
+      hmr: { overlay: false },
+
       port: 3001,
     },
     build: {
