@@ -26,6 +26,7 @@
 <script lang="ts" setup>
 import { useRouter } from "vue-router";
 const router = useRouter();
+
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath);
 };
