@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": " vite build",
     "bale": "node ./ast/demo1.js",
+    "test": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {

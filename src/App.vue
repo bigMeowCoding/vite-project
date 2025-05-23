@@ -9,6 +9,9 @@ import ElFormDemo from "./components/form-exercise.vue";
 function change() {
   console.log("change");
 }
+/**
+ * 输入框
+ */
 function input() {
   console.log("input");
 }
@@ -34,7 +37,13 @@ const dicData = [
     ],
   },
 ];
-const formValue = ref({});
+const formValue = ref({
+  cascader: [],
+  cascader1: [],
+});
+/**
+ * 监听表单值
+ */
 watch(
   formValue,
   (val) => {
@@ -42,6 +51,9 @@ watch(
   },
   { deep: true },
 );
+/**
+ * 表单配置
+ */
 const option = ref({
   column: [
     {
