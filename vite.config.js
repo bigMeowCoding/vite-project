@@ -12,9 +12,6 @@ export default defineConfig(
       // 模拟浏览器环境
       environment:
         "jsdom",
-      // 支持 React 测试库的扩展断言
-      setupFiles:
-        "./setupTests.js",
       // 测试文件匹配规则
       include:
         [
