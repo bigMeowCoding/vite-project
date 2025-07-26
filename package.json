@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:numberUtils": "vitest run src/utils/numberUtils.test.js",
     "test:Greeting": "vitest run src/components/Greeting.test.tsx",
+    "test:Counter": "vitest run src/components/Counter.test.tsx",
     "preview": "vite preview",
     "prettier": "prettier --write .",
     "lint": "eslint \"./src/**/*.{js,jsx}\" --fix && prettier \"./src/**/*.{js,jsx}\" --check",
