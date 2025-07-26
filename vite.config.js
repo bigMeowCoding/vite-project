@@ -1,55 +1,34 @@
-// import vue from "@vitejs/plugin-vue";
-import AutoImport from "unplugin-auto-import/vite";
-import Components from "unplugin-vue-components/vite";
-import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
-
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import i18nAuto from "./i18n-plugin/index.js";
-import path from "node:path";
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react"
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
-  const plugins = [
-    vue(),
-    AutoImport({
-      resolvers: [ElementPlusResolver()],
-    }),
-    Components({
-      resolvers: [ElementPlusResolver()],
-    }),
-  ];
-  const i18nAutoConf = {
-    output: {
-      generate: true,
-      path: path.resolve("src/assets"),
+export default defineConfig(
+  {
+    plugins:
+      [
+        react(),
+      ],
+    test: {
+      // 模拟浏览器环境
+      environment:
+        "jsdom",
+      // 支持 React 测试库的扩展断言
+      setupFiles:
+        "./setupTests.js",
+      // 测试文件匹配规则
+      include:
+        [
+          "**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
+        ],
+      // 开启覆盖率报告
+      coverage:
+        {
+          reporter:
+            [
+              "text",
+              "html",
+            ],
+        },
     },
-    include: ["**.js", "**.vue"], // 针对什么文件进行国际化词条
-    exclude: ["src/i18n/index.js", "**/node_modules/**"],
-    i18nCallee: "i18n.global.t", // 例子
-    dependency: {
-      // 例子
-      name: "i18n",
-      value: "/src/i18n/index.js",
-    },
-    transform: true, // 转译源码
-    sourceMap: false, // 生成映射文件
-  };
-  if (command === "serve") {
-    i18nAutoConf.mode = command;
-  } else if (command === "build") {
-    i18nAutoConf.mode = command;
-    i18nAutoConf.translate = {
-      on: false, // 开启自动翻译
-      lang: ["en", "zh-TW"],
-    };
   }
-  plugins.push(i18nAuto(i18nAutoConf));
-  return {
-    plugins,
-    build: {
-      minify: false, // 禁用代码压缩
-      target: "esnext", // 保持 ES6 语法
-    },
-  };
-});
+)

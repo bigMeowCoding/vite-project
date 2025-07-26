@@ -1,28 +1,45 @@
-module.exports = {
-  env: {
-    browser: true,
-    node: true,
-
-    es2021: true,
-  },
-  extends: ["eslint:recommended", "plugin:vue/vue3-essential"],
-  overrides: [
-    {
-      env: {
-        node: true,
-      },
-      files: [".eslintrc.{js,cjs}"],
-      parserOptions: {
-        sourceType: "script",
-      },
+module.exports =
+  {
+    env: {
+      browser: true,
+      es2021: true,
+      node: true,
     },
-  ],
-  parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
-  },
-  plugins: ["vue"],
-  rules: {
-    "no-console": "off",
-  },
-};
+    extends:
+      [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "prettier",
+        "plugin:prettier/recommended",
+      ],
+    parserOptions:
+      {
+        ecmaVersion:
+          "latest",
+        sourceType:
+          "module",
+        ecmaFeatures:
+          {
+            jsx: true,
+          },
+      },
+    settings:
+      {
+        react:
+          {
+            version:
+              "detect",
+          },
+      },
+    plugins:
+      [
+        "react",
+        "prettier",
+      ],
+    rules:
+      {
+        "prettier/prettier":
+          "error",
+      },
+  }

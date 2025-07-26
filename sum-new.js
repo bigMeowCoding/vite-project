@@ -1,6 +1,13 @@
-function sum(a, b) {
-  console.log("hello world");
-  return a + b;
+function sum(
+  a,
+  b
+) {
+  console.log(
+    "hello world"
+  )
+  return (
+    a + b
+  )
 }
 //
 // module.exports = sum;
