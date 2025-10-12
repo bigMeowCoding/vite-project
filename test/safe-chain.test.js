@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transformCode } from '../../safe-chain-cli.js';
+import { transformCode } from '../safe-chain-cli.js';
 
 function runTransform(source) {
   const { code } = transformCode(source, 'inline.js');
