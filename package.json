@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-
   "scripts": {
     "dev": "vite",
     "build": " vite build",
@@ -19,13 +18,16 @@
     "vue-i18n": "^9.10.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.28.3",
     "@babel/core": "^7.24.6",
     "@babel/generator": "^7.22.9",
     "@babel/parser": "^7.22.7",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@babel/preset-env": "^7.28.3",
     "@babel/traverse": "^7.22.8",
-    "@smallwei/avue": "~3.2.23",
     "@babel/types": "^7.22.5",
     "@rollup/pluginutils": "^5.0.2",
+    "@smallwei/avue": "~3.2.23",
     "@vitejs/plugin-vue": "^3.0.3",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.22.0",
