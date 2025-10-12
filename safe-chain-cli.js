@@ -87,51 +87,12 @@ function getRootObject(node) {
   return current;
 }
 
-/**
- * 检查是否需要添加可选链
- */
-function needsOptionalChaining(node, parent) {
-  // 检查成员表达式 (obj.prop)
-  if (t.isMemberExpression(node) && !node.optional) {
-    // 排除一些不需要可选链的情况
-    if (t.isThisExpression(node.object)) return false;
-    if (t.isSuper(node.object)) return false;
-    
-    // 获取根对象并检查是否为全局对象
-    const rootObject = getRootObject(node);
-    if (t.isIdentifier(rootObject)) {
-      const globalObjects = ['console', 'window', 'document', 'process', 'global', 'Math', 'Date', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean'];
-      if (globalObjects.includes(rootObject.name)) return false;
-    }
-    
-    // 排除数组索引访问 (obj[index])
-    if (node.computed) return false;
-    
-    // 检查是否已经在可选链中
-    if (hasOptionalChainInPath(node)) return false;
-    
-    return true;
-  }
-  
-  // 检查调用表达式 (obj.method())
-  if (t.isCallExpression(node) && t.isMemberExpression(node.callee) && !node.callee.optional) {
-    if (t.isThisExpression(node.callee.object)) return false;
-    if (t.isSuper(node.callee.object)) return false;
-    
-    // 获取根对象并检查是否为全局对象
-    const rootObject = getRootObject(node.callee);
-    if (t.isIdentifier(rootObject)) {
-      const globalObjects = ['console', 'window', 'document', 'process', 'global', 'Math', 'Date', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean'];
-      if (globalObjects.includes(rootObject.name)) return false;
-    }
-    
-    // 检查是否已经在可选链中
-    if (hasOptionalChainInPath(node.callee)) return false;
-    
-    return true;
-  }
-  
-  return false;
+// 判断是否为调用或构造的 callee 位置
+function isCalleeOfCallOrNew(path) {
+  const parent = path.parentPath;
+  if (!parent) return false;
+  const n = parent.node;
+  return (t.isCallExpression(n) || t.isNewExpression(n)) && n.callee === path.node;
 }
 
 /**
@@ -154,92 +115,132 @@ function hasOptionalChainInPath(node) {
 /**
  * 转换代码，添加可选链
  */
-function transformCode(code, filePath) {
+export function transformCode(code, filePath) {
   const ast = parseCode(code, filePath);
   if (!ast) return { hasChanges: false, transformCount: 0, code };
   
   let hasChanges = false;
   let transformCount = 0;
-  const transformations = [];
-  
-  const processedPositions = new Set();
   
   traverseDefault(ast, {
-    MemberExpression(path) {
-      if (DEFAULT_CONFIG.verbose) {
-        console.log(`检查成员表达式: ${generateDefault(path.node).code}`);
-      }
-      
-      // 跳过作为CallExpression.callee的MemberExpression，它们会在CallExpression中处理
-      if (t.isCallExpression(path.parent) && path.parent.callee === path.node) {
-        return;
-      }
-      
-      if (needsOptionalChaining(path.node, path.parent)) {
-        if (DEFAULT_CONFIG.verbose) {
-          console.log(`转换: ${generateDefault(path.node).code} -> ${generateDefault(path.node).code.replace('.', '?.')}`);
-        }
-        
-        // 记录转换位置 - 只转换属性访问的点
-        const propertyStart = path.node.property.start - 1; // 点的位置
-        
-        if (!processedPositions.has(propertyStart)) {
-          transformations.push({
-            start: propertyStart,
-            end: propertyStart + 1,
-            type: 'member',
-            node: path.node
-          });
-          processedPositions.add(propertyStart);
-          
+    // 对象字面量中的展开参数兜底：{ ...(arg || {}) }
+    ObjectExpression(path) {
+      const props = path.node.properties;
+      for (const prop of props) {
+        if (t.isSpreadElement(prop)) {
+          const arg = prop.argument;
+          if (t.isLogicalExpression(arg) || t.isConditionalExpression(arg)) continue;
+          const fallback = t.objectExpression([]);
+          prop.argument = t.logicalExpression('||', arg, fallback);
           hasChanges = true;
           transformCount++;
         }
       }
     },
-    
-    CallExpression(path) {
-      if (t.isMemberExpression(path.node.callee)) {
-        if (DEFAULT_CONFIG.verbose) {
-          console.log(`检查调用表达式: ${generateDefault(path.node).code}`);
-        }
-        
-        if (needsOptionalChaining(path.node.callee, path.node)) {
-          if (DEFAULT_CONFIG.verbose) {
-            console.log(`转换调用: ${generateDefault(path.node).code}`);
-          }
-          
-          // 记录转换位置 - 只转换方法调用的点
-          const propertyStart = path.node.callee.property.start - 1; // 点的位置
-          
-          if (!processedPositions.has(propertyStart)) {
-            transformations.push({
-              start: propertyStart,
-              end: propertyStart + 1,
-              type: 'call',
-              node: path.node.callee
-            });
-            processedPositions.add(propertyStart);
-            
-            hasChanges = true;
-            transformCount++;
-          }
+    // 数组字面量中的展开参数兜底：[ ...(arg || []) ]
+    ArrayExpression(path) {
+      const elems = path.node.elements;
+      for (const el of elems) {
+        if (el && t.isSpreadElement(el)) {
+          const arg = el.argument;
+          if (t.isLogicalExpression(arg) || t.isConditionalExpression(arg)) continue;
+          const fallback = t.arrayExpression([]);
+          el.argument = t.logicalExpression('||', arg, fallback);
+          hasChanges = true;
+          transformCount++;
         }
       }
+    },
+    // 为对象/数组解构在右侧添加空对象/空数组兜底：init || {} / init || []
+    VariableDeclarator(path) {
+      const { id, init } = path.node;
+      if (!init) return;
+      if (t.isLogicalExpression(init) || t.isConditionalExpression(init)) return;
+      if (t.isObjectPattern(id)) {
+        path.node.init = t.logicalExpression('||', init, t.objectExpression([]));
+        hasChanges = true;
+        transformCount++;
+      } else if (t.isArrayPattern(id)) {
+        path.node.init = t.logicalExpression('||', init, t.arrayExpression([]));
+        hasChanges = true;
+        transformCount++;
+      }
+    },
+    // 赋值解构右侧兜底：right || {} / right || []
+    AssignmentExpression(path) {
+      const { left, right } = path.node;
+      if (t.isLogicalExpression(right) || t.isConditionalExpression(right)) return;
+      if (t.isObjectPattern(left)) {
+        path.node.right = t.logicalExpression('||', right, t.objectExpression([]));
+        hasChanges = true;
+        transformCount++;
+      } else if (t.isArrayPattern(left)) {
+        path.node.right = t.logicalExpression('||', right, t.arrayExpression([]));
+        hasChanges = true;
+        transformCount++;
+      }
+    },
+    // 成员访问可选链
+    MemberExpression(path) {
+      // 跳过作为调用/构造的 callee，在调用里处理或跳过
+      if (isCalleeOfCallOrNew(path)) {
+        // 对 NewExpression 的 callee 必须跳过，避免 new obj?.Ctor()
+        if (t.isNewExpression(path.parent)) return;
+        // CallExpression 的 callee 在 CallExpression 处理中统一加可选链
+        return;
+      }
+      const { object, property, computed } = path.node;
+      // 写上下文跳过：赋值目标、更新表达式
+      const parent = path.parent;
+      if (t.isAssignmentExpression(parent) && parent.left === path.node) return;
+      if (t.isUpdateExpression(parent) && parent.argument === path.node) return;
+      // 跳过 this/super
+      if (t.isThisExpression(object) || t.isSuper(object)) return;
+      // 跳过全局对象
+      const rootObject = getRootObject(path.node);
+      if (t.isIdentifier(rootObject)) {
+        const globalObjects = ['console', 'window', 'document', 'process', 'global', 'Math', 'Date', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean'];
+        if (globalObjects.includes(rootObject.name)) return;
+      }
+      // 根据配置跳过数组访问（括号访问）
+      if (path.node.computed && DEFAULT_CONFIG.skipArrayAccess) return;
+      // 已存在可选链则跳过
+      if (path.node.optional || hasOptionalChainInPath(path.node)) return;
+      // 转换为可选成员访问
+      const opt = t.optionalMemberExpression(object, property, computed, true);
+      path.replaceWith(opt);
+      hasChanges = true;
+      transformCount++;
+    },
+    // 调用可选链
+    CallExpression(path) {
+      const { callee } = path.node;
+      if (!t.isMemberExpression(callee)) return;
+      // 跳过 this/super
+      if (t.isThisExpression(callee.object) || t.isSuper(callee.object)) return;
+      // 跳过 NewExpression（不适用）
+      if (t.isNewExpression(path.parent) && path.parent.callee === path.node) return;
+      // 跳过全局对象
+      const rootObject = getRootObject(callee);
+      if (t.isIdentifier(rootObject)) {
+        const globalObjects = ['console', 'window', 'document', 'process', 'global', 'Math', 'Date', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean'];
+        if (globalObjects.includes(rootObject.name)) return;
+      }
+      // 根据配置跳过数组访问（括号访问）
+      if (callee.computed && DEFAULT_CONFIG.skipArrayAccess) return;
+      // 已存在可选链则跳过
+      if ((t.isMemberExpression(callee) && callee.optional) || hasOptionalChainInPath(callee)) return;
+      // 先对成员访问加可选链（保证取到方法）
+      const newCallee = t.optionalMemberExpression(callee.object, callee.property, callee.computed, true);
+      // 再将调用改为可选调用（避免对 undefined 调用）
+      const newCall = t.optionalCallExpression(newCallee, path.node.arguments, true);
+      path.replaceWith(newCall);
+      hasChanges = true;
+      transformCount++;
     }
   });
   
-  // 应用转换（从后往前，避免位置偏移）
-  let transformedCode = code;
-  transformations.sort((a, b) => b.start - a.start);
-  
-  for (const transformation of transformations) {
-    const before = transformedCode.substring(0, transformation.start);
-    const after = transformedCode.substring(transformation.end);
-    
-    // 直接将点替换为可选链
-    transformedCode = before + '?.' + after;
-  }
+  const transformedCode = generateDefault(ast, { retainLines: false }).code;
   
   if (hasChanges) {
     scanStats.filesModified++;
@@ -400,5 +401,17 @@ program
     }
   });
 
-// 解析命令行参数
-program.parse();
+// 仅在作为 CLI 直接执行时解析命令行
+const isDirectRun = (() => {
+  try {
+    const invoked = process.argv[1] ? path.resolve(process.argv[1]) : '';
+    const current = new URL(import.meta.url).pathname;
+    return current === invoked;
+  } catch {
+    return true;
+  }
+})();
+
+if (isDirectRun) {
+  program.parse();
+}
