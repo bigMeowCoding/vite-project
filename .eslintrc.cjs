@@ -5,7 +5,11 @@ module.exports = {
 
     es2021: true,
   },
-  extends: ["eslint:recommended", "plugin:vue/vue3-essential"],
+  extends: [
+    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "plugin:prettier/recommended"
+  ],
   overrides: [
     {
       env: {
@@ -21,8 +25,10 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["vue"],
+  plugins: ["vue", "prettier"],
   rules: {
     "no-console": "off",
+    // 调整 Prettier 报错级别为警告，避免开发中断
+    "prettier/prettier": "warn",
   },
 };
