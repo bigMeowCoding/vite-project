@@ -1,2 +1,0 @@
-const user = {};
-const name = user?.profile?.name;
