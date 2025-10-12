@@ -1,4 +1,5 @@
-let a=1;
-const sum = (a,b)=>a+b;
+let obj = { a: 1 };
+const sum = (a, b) => a + b;
 
-a=a+1;
+const b = obj.a;
+const a = obj.a + 1;
