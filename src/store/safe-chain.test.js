@@ -20,6 +20,13 @@ describe('safe-chain: optional chaining and fallbacks', () => {
     expect(out).toContain('api?.getUser?.()');
   });
 
+  it('handles computed access and adds chaining on following property', () => {
+    const input = `const itemName = data['items'][0].name;`;
+    const out = runTransform(input);
+    // 默认不跳过数组访问，整条链路都会加可选链
+    expect(out).toContain(`data?.['items']?.[0]?.name`);
+  });
+
   it('skips new expression callee', () => {
     const input = `new obj.Ctor();`;
     const out = runTransform(input);
@@ -66,5 +73,12 @@ describe('safe-chain: optional chaining and fallbacks', () => {
     expect(out).toContain("console.log('x')");
     expect(out).toContain('this.method()');
     expect(out).toContain('super()');
+  });
+
+  it('adds optional chaining for call/apply invocations', () => {
+    const input = `function fn(x){return x}; const ctx={}; fn.call(ctx,1); fn.apply(ctx,[1,2]);`;
+    const out = runTransform(input);
+    expect(out).toContain('fn?.call?.(ctx, 1)');
+    expect(out).toContain('fn?.apply?.(ctx, [1, 2])');
   });
 });
