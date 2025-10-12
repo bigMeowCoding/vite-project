@@ -56,6 +56,64 @@ function main() {
 
   // 遍历AST并自动补充可选链
   traverse(ast, {
+    // 对象字面量中的展开参数兜底：{ ...(arg || {}) }
+    ObjectExpression(path) {
+      const props = path.node.properties;
+      for (const prop of props) {
+        if (t.isSpreadElement(prop)) {
+          const arg = prop.argument;
+          // 已有兜底或条件则跳过
+          if (t.isLogicalExpression(arg) || t.isConditionalExpression(arg)) continue;
+          const fallback = t.objectExpression([]);
+          prop.argument = t.logicalExpression('||', arg, fallback);
+        }
+      }
+    },
+    // 数组字面量中的展开参数兜底：[ ...(arg || []) ]
+    ArrayExpression(path) {
+      const elems = path.node.elements;
+      for (const el of elems) {
+        if (el && t.isSpreadElement(el)) {
+          const arg = el.argument;
+          if (t.isLogicalExpression(arg) || t.isConditionalExpression(arg)) continue;
+          const fallback = t.arrayExpression([]);
+          el.argument = t.logicalExpression('||', arg, fallback);
+        }
+      }
+    },
+    // 为对象/数组解构在右侧添加空对象/空数组兜底：init || {} / init || []
+    VariableDeclarator(path) {
+      const { id, init } = path.node;
+      if (!init) return;
+      // 对象解构
+      if (t.isObjectPattern(id)) {
+        // 如果已存在兜底（|| 或 ??）则跳过
+        if (t.isLogicalExpression(init) || t.isConditionalExpression(init)) return;
+        const fallback = t.objectExpression([]);
+        path.node.init = t.logicalExpression('||', init, fallback);
+      }
+      // 数组解构
+      if (t.isArrayPattern(id)) {
+        if (t.isLogicalExpression(init) || t.isConditionalExpression(init)) return;
+        const fallback = t.arrayExpression([]);
+        path.node.init = t.logicalExpression('||', init, fallback);
+      }
+    },
+    // 赋值表达式的解构也加兜底：right || {} / right || []
+    AssignmentExpression(path) {
+      const { left, right } = path.node;
+      if (!right) return;
+      if (t.isObjectPattern(left)) {
+        if (t.isLogicalExpression(right) || t.isConditionalExpression(right)) return;
+        const fallback = t.objectExpression([]);
+        path.node.right = t.logicalExpression('||', right, fallback);
+      }
+      if (t.isArrayPattern(left)) {
+        if (t.isLogicalExpression(right) || t.isConditionalExpression(right)) return;
+        const fallback = t.arrayExpression([]);
+        path.node.right = t.logicalExpression('||', right, fallback);
+      }
+    },
     MemberExpression(path) {
       if (isInvalidLHS(path)) return;
       if (isCalleeOfCallOrNew(path)) return; // 跳过函数调用与 new 的 callee

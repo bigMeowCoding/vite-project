@@ -63,3 +63,8 @@ obj.a++;
 
 // 构造调用（不应处理为可选链）
 new obj.Ctor();
+// 解构
+const { o1, ...ret } = obj;
+const [o2, ...rest] = a1;
+a = { ...ret };
+a = [...rest];
