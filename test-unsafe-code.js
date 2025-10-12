@@ -1,0 +1,41 @@
+// 测试文件：包含需要添加可选链的代码
+
+// 对象属性访问
+const user = {};
+const name = user?.profile?.name;
+const email = user?.contact?.email;
+
+// 方法调用
+const result = user?.getData();
+const formatted = user?.format?.toString();
+
+// 嵌套访问
+const address = user?.profile?.address?.street;
+const phone = user?.contact?.phone?.number;
+
+// 数组访问（这些不应该被转换）
+const items = [1, 2, 3];
+const first = items[0];
+
+// 已经有可选链的（不应该重复添加）
+const existing = user?.profile?.name;
+
+// 全局对象（不应该转换）
+console.log('test');
+window.location.href = '/';
+document.body.style.color = 'red';
+
+// this和super（不应该转换）
+class TestClass {
+  method() {
+    this.property = 'value';
+    return this.getValue();
+  }
+}
+
+// 函数调用链
+const api = {};
+const data = api?.request()?.then()?.catch();
+const processed = api?.process?.data?.transform();
+
+export { user, name, email, result };

@@ -2,6 +2,6 @@ function sum(a, b) {
   console.log("hello world");
   return a + b;
 }
-//
-// module.exports = sum;
-// const number = 10;
+var obj ={}
+const b = obj?.a;
+const a = sum?.(1,2)
