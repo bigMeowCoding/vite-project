@@ -7,4 +7,14 @@ export default defineConfig({
     minify: false,
     target: "esnext",
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.js",
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/**/*.{js,jsx}"],
+    },
+  },
 });
