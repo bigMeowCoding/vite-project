@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { useState, useEffect } from "./fine-update";
+import { useState, useEffect, useMemo } from "./fine-update";
 
 describe("fine-update", () => {
   it("useState should return initial value and setter", () => {
@@ -75,5 +75,43 @@ describe("fine-update", () => {
 
     expect(fn1).toHaveBeenCalledTimes(2);
     expect(fn2).toHaveBeenCalledTimes(2);
+  });
+
+  describe("useMemo", () => {
+    it("should return initial value", () => {
+      const getMemo = useMemo(() => 10);
+      expect(getMemo()).toBe(10);
+    });
+
+    it("should update when dependency changes", () => {
+      const [getCount, setCount] = useState(1);
+      const getDouble = useMemo(() => getCount() * 2);
+
+      expect(getDouble()).toBe(2);
+      setCount(2);
+      expect(getDouble()).toBe(4);
+    });
+
+    it("should notify subscribers when updated", () => {
+      const [getCount, setCount] = useState(1);
+      const getDouble = useMemo(() => getCount() * 2);
+      const fn = vi.fn(() => getDouble());
+
+      useEffect(fn);
+      // Initial run
+      expect(fn).toHaveBeenCalledTimes(1);
+
+      setCount(2);
+      // useMemo updates -> notifies effect
+      expect(fn).toHaveBeenCalledTimes(2);
+      expect(getDouble()).toBe(4);
+    });
+
+    it("should only call factory once initially", () => {
+      const spy = vi.fn(() => 10);
+      const getMemo = useMemo(spy);
+      expect(getMemo()).toBe(10);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
   });
 });

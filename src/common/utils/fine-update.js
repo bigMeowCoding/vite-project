@@ -33,7 +33,7 @@ export function useState(value) {
   };
   const setValue = (newValue) => {
     value = newValue;
-    subs.forEach((sub) => sub.execute());
+    [...subs].forEach((sub) => sub.execute());
   };
   return [getValue, setValue];
 }
@@ -43,4 +43,12 @@ function subscribe(effect, subs) {
   effect.deps.add(subs);
 }
 
-export function useMemo() {}
+export function useMemo(callback) {
+  const [getValue, setValue] = useState();
+
+  useEffect(() => {
+    setValue(callback());
+  });
+
+  return getValue;
+}
