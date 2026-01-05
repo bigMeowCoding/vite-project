@@ -36,17 +36,6 @@ export var trap = function (heights) {
       return max;
     };
     r = findMaxRight();
-
-    // while (r < heights.length - 1) {
-    //   if (heights[r] >= heights[l]) {
-    //     break;
-    //   }
-
-    //   if (heights[r] > heights[r - 1] && heights[r + 1] <= heights[r]) {
-    //     break;
-    //   }
-    //   r++;
-    // }
     console.log("r", r);
     const blockLen = r - l - 1;
     if (blockLen > 0) {
