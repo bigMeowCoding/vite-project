@@ -114,6 +114,9 @@ export const useResumeStore = defineStore("resume", () => {
   function removeEducation(index) {
     education.value.splice(index, 1);
   }
+  function setEducation(list) {
+    education.value = Array.isArray(list) ? list : [];
+  }
 
   function setSkills(list) {
     skills.value = list;
@@ -125,12 +128,18 @@ export const useResumeStore = defineStore("resume", () => {
   function removeWork(index) {
     work.value.splice(index, 1);
   }
+  function setWork(list) {
+    work.value = Array.isArray(list) ? list : [];
+  }
 
   function addProject(item) {
     projects.value.push(item);
   }
   function removeProject(index) {
     projects.value.splice(index, 1);
+  }
+  function setProjects(list) {
+    projects.value = Array.isArray(list) ? list : [];
   }
 
   return {
@@ -142,10 +151,13 @@ export const useResumeStore = defineStore("resume", () => {
     setHeader,
     addEducation,
     removeEducation,
+    setEducation,
     setSkills,
     addWork,
     removeWork,
+    setWork,
     addProject,
     removeProject,
+    setProjects,
   };
 });

@@ -48,6 +48,7 @@ body {
   color: #fff;
   padding: 7px 15px;
   font-size: 15px;
+  text-align: left;
   font-weight: bold;
   margin: 20px 0 12px 0;
   border-radius: 3px;
@@ -209,6 +210,18 @@ body {
 .sub-item-title {
   font-weight: 500;
   color: #333;
+}
+code {
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  background-color: #f0f2f5;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #d63384;
+}
+em {
+  font-style: italic;
+  color: #0d6efd;
 }
 @media print {
   body {

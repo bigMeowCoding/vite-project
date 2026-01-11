@@ -1,9 +1,9 @@
 <script setup>
-import ResumeEditor from "./views/ResumeEditor.vue";
+import ResumeMarkdownViewer from "./views/ResumeMarkdownViewer.vue";
 </script>
 
 <template>
-  <ResumeEditor />
-  </template>
+  <ResumeMarkdownViewer />
+</template>
 
 <style scoped></style>

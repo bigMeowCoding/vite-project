@@ -1,9 +1,11 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { useResumeStore } from "../store/resume.js";
 import ResumePreview from "../components/ResumePreview.vue";
+import { parseResumeMarkdown, generateResumeMarkdown } from "../utils/resumeMarkdown.js";
 const store = useResumeStore();
 const localHeader = reactive({ ...store.header });
+const mdSource = ref(generateResumeMarkdown(store));
 function applyHeader() {
   store.setHeader(localHeader);
 }
@@ -43,6 +45,17 @@ function removeResult(i, j) {
 }
 function exportPdfBrowser() {
   window.print();
+}
+function applyMarkdown() {
+  const data = parseResumeMarkdown(mdSource.value || "");
+  if (data.header) store.setHeader(data.header);
+  if (Array.isArray(data.education)) store.setEducation(data.education);
+  if (Array.isArray(data.skills)) store.setSkills(data.skills);
+  if (Array.isArray(data.work)) store.setWork(data.work);
+  if (Array.isArray(data.projects)) store.setProjects(data.projects);
+}
+function generateMarkdownFromStore() {
+  mdSource.value = generateResumeMarkdown(store);
 }
 </script>
 
@@ -146,6 +159,18 @@ function exportPdfBrowser() {
     </el-col>
     <el-col :span="14" class="preview-side">
       <ResumePreview />
+    </el-col>
+  </el-row>
+  <el-row :gutter="12" class="no-print" style="margin-top:12px">
+    <el-col :span="24">
+      <el-card>
+        <template #header>Markdown/DSL</template>
+        <div style="margin-bottom:8px">
+          <el-button type="primary" size="small" @click="applyMarkdown">应用到预览</el-button>
+          <el-button size="small" @click="generateMarkdownFromStore">从当前数据生成 Markdown</el-button>
+        </div>
+        <el-input type="textarea" :rows="18" v-model="mdSource" placeholder="在此粘贴/编写简历 Markdown/DSL" />
+      </el-card>
     </el-col>
   </el-row>
 </template>
