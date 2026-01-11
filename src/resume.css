@@ -212,19 +212,37 @@ body {
 }
 @media print {
   body {
-    background: #fff;
+    background: #fff !important;
+    font-family: Arial, "Microsoft YaHei", "STHeiti", "Heiti SC", "SimHei", sans-serif !important;
     font-size: 12px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .resume-container {
     box-shadow: none;
     margin: 0;
     padding: 15px 25px;
     max-width: 100%;
+    width: 100%;
   }
   .section-title {
     margin: 15px 0 10px 0;
     padding: 5px 12px;
     font-size: 14px;
+    color: #fff !important; /* 恢复白色 */
+  }
+  /* 强制正文颜色 */
+  .name, .info-item, .school-name, .edu-detail, .edu-date, 
+  .skills-list li, .company-name, .work-date, .work-content, 
+  .project-title, .project-intro, .project-results {
+    color: #000 !important;
+  }
+  .position {
+    color: #4a90d9 !important;
   }
 }
 @page {

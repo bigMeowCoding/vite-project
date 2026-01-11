@@ -47,8 +47,8 @@ function exportPdfBrowser() {
 </script>
 
 <template>
-  <el-row :gutter="12">
-    <el-col :span="10">
+  <el-row :gutter="12" class="main-layout">
+    <el-col :span="10" class="editor-side no-print">
       <el-card>
         <template #header>基础信息</template>
         <el-form label-width="90px">
@@ -144,11 +144,31 @@ function exportPdfBrowser() {
         </div>
       </el-card>
     </el-col>
-    <el-col :span="14">
+    <el-col :span="14" class="preview-side">
       <ResumePreview />
     </el-col>
   </el-row>
 </template>
 
-<style scoped>
+<style>
+@media print {
+  .no-print, .editor-side {
+    display: none !important;
+  }
+  .preview-side {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .main-layout {
+    display: block !important;
+    margin: 0 !important;
+  }
+  body, html, #app {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
 </style>
