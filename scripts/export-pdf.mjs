@@ -1,27 +1,29 @@
-import { spawn } from "node:child_process";
 import path from "node:path";
 import fs from "node:fs";
 import puppeteer from "puppeteer";
+import { createServer } from "vite";
 
 const root = path.resolve(process.cwd());
 const outPath = path.join(root, "dist", "resume.pdf");
 
 async function main() {
-  console.log('Building project...');
-  // Build the project to dist folder
-  await new Promise((resolve, reject) => {
-    const p = spawn("npm", ["run", "build"], { stdio: "inherit", shell: true });
-    p.on("close", (code) => code === 0 ? resolve() : reject(new Error(`Build failed with code ${code}`)));
+  console.log('Starting internal dev server...');
+  
+  // 使用 Vite API 直接启动开发服务，无需构建
+  const server = await createServer({
+    configFile: path.resolve(root, 'vite.config.js'),
+    root: root,
+    server: {
+      port: 0, // 自动分配可用端口
+    }
   });
-
-  console.log('Starting preview server...');
-  const server = spawn("npm", ["run", "preview", "--", "--port", "14173", "--strictPort"], { 
-    stdio: 'inherit',
-    shell: true 
-  });
-
-  // Wait for server to be ready
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  
+  await server.listen();
+  const address = server.httpServer.address();
+  const port = address.port;
+  const url = `http://localhost:${port}/`;
+  
+  console.log(`Server running at ${url}`);
 
   console.log('Starting browser...');
   const browser = await puppeteer.launch({
@@ -35,7 +37,6 @@ async function main() {
   
   try {
     const page = await browser.newPage();
-    const url = 'http://localhost:14173/';
     console.log(`Loading ${url}...`);
     
     await page.goto(url, { waitUntil: "networkidle0" });
@@ -55,9 +56,7 @@ async function main() {
     process.exitCode = 1;
   } finally {
     await browser.close();
-    server.kill();
-    // Force kill if needed, though usually unnecessary if process exits
-    try { process.kill(server.pid); } catch (e) { /* ignore */ }
+    await server.close();
   }
 }
 
