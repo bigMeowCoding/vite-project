@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": " vite build",
     "bale": "node ./ast/demo1.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "export:pdf": "node scripts/export-pdf.mjs"
   },
   "dependencies": {
     "element-plus": "^2.6.0",
