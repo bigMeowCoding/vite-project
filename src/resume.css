@@ -246,7 +246,10 @@ em {
     margin: 15px 0 10px 0;
     padding: 5px 12px;
     font-size: 14px;
-    color: #fff !important; /* 恢复白色 */
+    background-color: #4a90d9 !important; /* 强制背景色 */
+    color: #fff !important; 
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   /* 强制正文颜色 */
   .name, .info-item, .school-name, .edu-detail, .edu-date, 
