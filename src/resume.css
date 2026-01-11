@@ -260,6 +260,16 @@ em {
   .position {
     color: #4a90d9 !important;
   }
+  /* 强制加粗 */
+  strong,
+  .project-intro strong,
+  .project-results-title,
+  .project-title {
+    font-weight: 700 !important;
+    color: #000 !important;
+    /* 增加文字阴影模拟加粗，防止字体不支持粗体时的回退失效 */
+    text-shadow: 0.5px 0 0 currentColor;
+  }
 }
 @page {
   size: A4;
