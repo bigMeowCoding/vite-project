@@ -9,22 +9,32 @@ var findKthLargest = function (nums, k) {
     r = nums.length - 1;
   while (l <= r) {
     const pivotIndex = l + Math.floor(Math.random() * (r - l + 1));
-    [nums[pivotIndex], nums[r]] = [nums[r], nums[pivotIndex]];
-    const pivot = nums[r];
-    let scrollIndex = l;
-    for (let i = l; i < r; i++) {
+    const pivot = nums[pivotIndex];
+
+    // 3-way partition
+    let lt = l; // nums[l...lt-1] < pivot
+    let gt = r; // nums[gt+1...r] > pivot
+    let i = l; // current index
+
+    while (i <= gt) {
       if (nums[i] < pivot) {
-        [nums[i], nums[scrollIndex]] = [nums[scrollIndex], nums[i]];
-        scrollIndex++;
+        [nums[i], nums[lt]] = [nums[lt], nums[i]];
+        lt++;
+        i++;
+      } else if (nums[i] > pivot) {
+        [nums[i], nums[gt]] = [nums[gt], nums[i]];
+        gt--;
+      } else {
+        i++;
       }
     }
-    [nums[scrollIndex], nums[r]] = [nums[r], nums[scrollIndex]];
-    if (scrollIndex === kLargetIndex) {
-      return nums[scrollIndex];
-    } else if (scrollIndex < kLargetIndex) {
-      l = scrollIndex + 1;
+
+    if (kLargetIndex >= lt && kLargetIndex <= gt) {
+      return nums[kLargetIndex];
+    } else if (kLargetIndex < lt) {
+      r = lt - 1;
     } else {
-      r = scrollIndex - 1;
+      l = gt + 1;
     }
   }
   return nums[kLargetIndex];
