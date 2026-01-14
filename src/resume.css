@@ -176,40 +176,39 @@ body {
   text-align: left;
   margin-bottom: 5px;
 }
-.project-results ul {
-  list-style: none;
-  padding-left: 0;
-}
-.project-results ul li {
-  position: relative;
+.project-results-list {
   padding-left: 18px;
+  margin: 0;
+}
+.project-results-list > li {
   margin-bottom: 6px;
   line-height: 1.7;
   text-align: justify;
 }
-.project-results ul li::before {
+.project-result-main {
+  font-weight: 600;
+  color: #333;
+}
+.project-result-sub-list {
+  list-style: none;
+  margin-top: 4px;
+  padding-left: 0;
+}
+.project-result-sub-list li {
+  position: relative;
+  margin-bottom: 4px;
+  line-height: 1.6;
+  text-align: justify;
+  padding-left: 14px;
+}
+.project-result-sub-list li::before {
   content: '•';
   position: absolute;
   left: 0;
   color: #4a90d9;
   font-weight: bold;
-}
-.project-results ol {
-  padding-left: 18px;
-  margin: 0;
-}
-.project-results ol li {
-  margin-bottom: 6px;
-  line-height: 1.7;
-  text-align: justify;
-}
-.sub-item {
-  margin-left: 18px;
-  margin-top: 5px;
-}
-.sub-item-title {
-  font-weight: 500;
-  color: #333;
+  font-size: 14px;
+  line-height: 1.6;
 }
 code {
   font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;

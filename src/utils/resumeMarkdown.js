@@ -11,6 +11,7 @@ export function parseResumeMarkdown(src) {
   let section = "";
   let currentWork = null;
   let currentProject = null;
+  let lastProjectResultIndex = -1;
   function trim(s) {
     return s.trim();
   }
@@ -76,11 +77,45 @@ export function parseResumeMarkdown(src) {
       if (/^###\s*/.test(line)) {
         currentProject = { title: trim(line.replace(/^###\s*/, "")), intro: "", results: [] };
         data.projects.push(currentProject);
+        lastProjectResultIndex = -1;
       } else if (/^简介：/.test(line) && currentProject) {
         currentProject.intro = trim(line.replace(/^简介：/, ""));
-      } else if (!/^成果：/.test(line)) {
-        const m = line.match(/^-\s*(.+)\s*$/);
-        if (m && currentProject) currentProject.results.push(trim(m[1]));
+      } else if (/^(成果|核心成果)[:：]/.test(line)) {
+        lastProjectResultIndex = -1;
+      } else if (currentProject) {
+        const numTop = line.match(/^\s*(\d+)\.\s*(.+)\s*$/);
+        const bulletMatch = line.match(/^(\s*)-\s*(.+)\s*$/);
+        
+        if (numTop) {
+          const index = parseInt(numTop[1], 10);
+          const title = trim(numTop[2]);
+          currentProject.results.push({ index, title, items: [] });
+          lastProjectResultIndex = currentProject.results.length - 1;
+        } else if (bulletMatch) {
+          const indent = bulletMatch[1].length;
+          const content = trim(bulletMatch[2]);
+          
+          if (indent >= 2 && lastProjectResultIndex >= 0) {
+            // Sub-item
+            const group = currentProject.results[lastProjectResultIndex];
+            if (group) {
+              if (typeof group === "string") {
+                // Should not happen if we only use objects for structured, but for safety
+                currentProject.results[lastProjectResultIndex] = {
+                  title: group,
+                  items: [content],
+                };
+              } else {
+                group.items = group.items || [];
+                group.items.push(content);
+              }
+            }
+          } else {
+            // Top-level bullet
+            currentProject.results.push({ title: content, items: [] });
+            lastProjectResultIndex = currentProject.results.length - 1;
+          }
+        }
       }
     }
     i++;

@@ -79,12 +79,28 @@ function formatText(text) {
     <div class="section-title">项目经历</div>
     <div v-for="(p,i) in projects" :key="i" class="project-item">
       <div class="project-title" v-html="formatText(p.title)"></div>
-      <p class="project-intro"><strong style="color:#333">项目简介：</strong><span v-html="formatText(p.intro)"></span></p>
+      <p class="project-intro">
+        <strong style="color:#333">项目简介：</strong>
+        <span v-html="formatText(p.intro)"></span>
+      </p>
       <div class="project-results">
         <div class="project-results-title">核心成果：</div>
-        <ul>
-          <li v-for="(r,j) in p.results" :key="j" v-html="formatText(r)"></li>
-        </ul>
+        <!-- 外层：项目成果使用数字序列展示 -->
+        <ol class="project-results-list">
+          <li v-for="(r,j) in p.results" :key="j">
+            <template v-if="typeof r === 'string'">
+              <span class="project-result-main" v-html="formatText(r)"></span>
+            </template>
+            <template v-else>
+              <!-- 一级标题：数字序号由 ol 控制，这里只展示标题文本，可以包含 markdown 加粗 -->
+              <span class="project-result-main" v-html="formatText(r.title || '')"></span>
+              <!-- 二级：支持嵌套无序列表 -->
+              <ul v-if="r.items && r.items.length" class="project-result-sub-list">
+                <li v-for="(sub,k) in r.items" :key="k" v-html="formatText(sub)"></li>
+              </ul>
+            </template>
+          </li>
+        </ol>
       </div>
     </div>
   </div>
