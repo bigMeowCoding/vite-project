@@ -5,17 +5,37 @@
 }
 body {
   font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.6;
   color: #333;
   background: #f5f5f5;
 }
 .resume-container {
-  max-width: 800px;
+  width: 210mm;
   margin: 20px auto;
   background: #fff;
-  padding: 35px 45px;
+  padding: 15px 55px; /* 模拟打印页边距：左右 55px 约等于 14.6mm，加上内容区约等于 A4 */
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+}
+.page-guide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-bottom: 1px dashed #ff4d4f;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  color: #ff4d4f;
+  font-size: 12px;
+  padding-right: 10px;
+}
+.page-guide::after {
+  content: attr(data-page);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 5px;
 }
 .header {
   margin-bottom: 20px;
@@ -46,11 +66,11 @@ body {
 .section-title {
   background: linear-gradient(135deg, #4a90d9 0%, #67b8de 100%);
   color: #fff;
-  padding: 7px 15px;
-  font-size: 15px;
+  padding: 5px 12px;
+  font-size: 14px;
   text-align: left;
   font-weight: bold;
-  margin: 20px 0 12px 0;
+  margin: 15px 0 10px 0;
   border-radius: 3px;
   position: relative;
 }
@@ -261,6 +281,9 @@ em {
     max-width: 100%;
     width: 100%;
   }
+  .page-guide {
+    display: none;
+  }
   .section-title {
     margin: 15px 0 10px 0;
     padding: 5px 12px;
@@ -283,7 +306,8 @@ em {
   strong,
   .project-intro strong,
   .project-results-title,
-  .project-title {
+  .project-title,
+  .project-result-main {
     font-weight: 700 !important;
     color: #000 !important;
     /* 增加文字阴影模拟加粗，防止字体不支持粗体时的回退失效 */

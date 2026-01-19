@@ -38,10 +38,56 @@ function isOrdered(results) {
   // 如果有 index 属性，认为是有序
   return first.index !== undefined;
 }
+
+// 页面高度计算
+// A4纸高度 297mm
+// 浏览器打印时，通常会有页边距。如果在 CSS 中设置了 @page { margin: 8mm; }
+// 则内容高度每页约为 297 - 16 = 281mm。
+// 这里的 281mm 指的是内容流的高度。
+// 我们在预览容器中每隔 281mm 画一条线即可。
+// 1mm ≈ 3.7795px
+const PAGE_HEIGHT_MM = 281;
+const PAGE_HEIGHT_PX = PAGE_HEIGHT_MM * 3.7795;
+
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+
+const containerRef = ref(null);
+const totalPages = ref(0);
+
+const updatePageGuides = () => {
+  if (!containerRef.value) return;
+  // 获取容器高度
+  const height = containerRef.value.scrollHeight;
+  // 计算页数
+  totalPages.value = Math.floor(height / PAGE_HEIGHT_PX);
+};
+
+// 监听数据变化，更新参考线
+watch([header, education, skills, work, projects], () => {
+  nextTick(updatePageGuides);
+}, { deep: true });
+
+onMounted(() => {
+  updatePageGuides();
+  window.addEventListener('resize', updatePageGuides);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updatePageGuides);
+});
 </script>
 
 <template>
-  <div class="resume-container">
+  <div class="resume-container" ref="containerRef">
+    <!-- 页面辅助线 -->
+    <div 
+      v-for="n in totalPages" 
+      :key="n" 
+      class="page-guide" 
+      :style="{ top: (n * PAGE_HEIGHT_PX) + 'px' }"
+      :data-page="'第 ' + n + ' 页结束 / 第 ' + (n + 1) + ' 页开始'"
+    ></div>
+
     <div class="header">
       <div class="name">{{ header.name }}</div>
       <div class="info-grid">
