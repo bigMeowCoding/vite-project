@@ -186,7 +186,7 @@ body {
   text-align: justify;
 }
 .project-result-main {
-  font-weight: 600;
+  font-weight: bold;
   color: #333;
 }
 .project-result-sub-list {
@@ -209,6 +209,26 @@ body {
   font-weight: bold;
   font-size: 14px;
   line-height: 1.6;
+}
+.project-results-list.unordered {
+  padding-left: 0;
+  list-style: none;
+}
+.project-results-list.unordered > li {
+  position: relative;
+  padding-left: 14px;
+}
+.project-results-list.unordered > li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #4a90d9;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.project-results-list.unordered .project-result-main {
+  font-weight: normal;
 }
 code {
   font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
@@ -268,6 +288,10 @@ em {
     color: #000 !important;
     /* 增加文字阴影模拟加粗，防止字体不支持粗体时的回退失效 */
     text-shadow: 0.5px 0 0 currentColor;
+  }
+  .project-results-list.unordered .project-result-main {
+    font-weight: normal !important;
+    text-shadow: none !important;
   }
 }
 @page {

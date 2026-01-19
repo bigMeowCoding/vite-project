@@ -29,6 +29,15 @@ function formatText(text) {
   
   return html;
 }
+
+function isOrdered(results) {
+  if (!results || results.length === 0) return false;
+  const first = results[0];
+  // 如果是字符串，认为是无序
+  if (typeof first === 'string') return false;
+  // 如果有 index 属性，认为是有序
+  return first.index !== undefined;
+}
 </script>
 
 <template>
@@ -85,8 +94,11 @@ function formatText(text) {
       </p>
       <div class="project-results">
         <div class="project-results-title">核心成果：</div>
-        <!-- 外层：项目成果使用数字序列展示 -->
-        <ol class="project-results-list">
+        <!-- 外层：项目成果根据内容动态切换有序/无序列表 -->
+        <component 
+          :is="isOrdered(p.results) ? 'ol' : 'ul'" 
+          :class="['project-results-list', isOrdered(p.results) ? '' : 'unordered']"
+        >
           <li v-for="(r,j) in p.results" :key="j">
             <template v-if="typeof r === 'string'">
               <span class="project-result-main" v-html="formatText(r)"></span>
@@ -100,7 +112,7 @@ function formatText(text) {
               </ul>
             </template>
           </li>
-        </ol>
+        </component>
       </div>
     </div>
   </div>
